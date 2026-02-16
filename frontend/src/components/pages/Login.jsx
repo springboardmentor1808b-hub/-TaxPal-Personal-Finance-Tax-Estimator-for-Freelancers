@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+import API from "../../api";
+import { useNavigate } from "react-router-dom";
+
 
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -39,35 +43,37 @@ const Login = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    let newErrors = {
-      email: '',
-      password: ''
-    };
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    // Validate email
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid Gmail address (e.g., name@gmail.com)';
-    }
-
-    // Validate password
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-
-    setErrors(newErrors);
-
-    // If no errors, submit the form
-    if (!newErrors.email && !newErrors.password) {
-      console.log('Login data:', formData);
-      setSuccessMessage('Login successful! Welcome back.');
-      // Add your login logic here
-    }
+  let newErrors = {
+    email: "",
+    password: "",
   };
+
+  if (!formData.email) newErrors.email = "Email is required";
+  if (!formData.password) newErrors.password = "Password is required";
+
+  setErrors(newErrors);
+
+  if (newErrors.email || newErrors.password) return;
+
+  try {
+    const res = await API.post("/auth/login", formData);
+
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+
+    setSuccessMessage("Login successful!");
+
+    setTimeout(() => {
+      navigate("/");
+    }, 1000);
+
+  } catch (err) {
+    alert(err.response?.data?.message || "Login failed");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">

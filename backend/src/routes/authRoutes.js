@@ -16,6 +16,7 @@ router.post(
     body("email").isEmail().withMessage("Valid email required"),
     body("password").isLength({ min: 6 }).withMessage("Password must be 6 chars"),
     body("country").notEmpty().withMessage("Country required"),
+    body("incomeBracket").notEmpty().withMessage("Income required"),
   ],
   registerUser
 );

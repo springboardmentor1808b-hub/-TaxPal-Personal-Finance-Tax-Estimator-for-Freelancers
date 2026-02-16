@@ -44,15 +44,15 @@ const userSchema = new mongoose.Schema(
 
     incomeBracket: {
       type: String,
-      enum: ["low", "middle", "high"],
-      default: "middle",
+      required: true,
     },
+
   },
   { timestamps: true }
 );
 
 
-  // HASH PASSWORD BEFORE SAVE
+// HASH PASSWORD BEFORE SAVE
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
@@ -62,7 +62,7 @@ userSchema.pre("save", async function () {
 });
 
 
- //  MATCH PASSWORD METHOD
+//  MATCH PASSWORD METHOD
 
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
