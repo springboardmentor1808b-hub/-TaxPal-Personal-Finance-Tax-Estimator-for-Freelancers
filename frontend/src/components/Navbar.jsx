@@ -35,14 +35,15 @@ const Navbar = () => {
             <>
               <Link
                 to="/login"
-                className="bg-primary-300 hover:bg-yellow-500 transition text-white px-4 md:px-5 py-2 rounded-lg text-xs md:text-sm font-medium shadow-md"
+                className="bg-cream hover:opacity-90 transition text-primary px-4 md:px-5 py-2 rounded-lg text-xs md:text-sm font-medium shadow-md"
+
               >
                 Login
               </Link>
 
               <Link
                 to="/register"
-                className="bg-primary-300 hover:bg-yellow-500 transition px-4 md:px-5 py-2 rounded-lg text-xs md:text-sm font-medium shadow-md"
+                className="bg-cream hover:opacity-90 transition text-primary px-4 md:px-5 py-2 rounded-lg text-xs md:text-sm font-mediumbg-cream hover:opacity-90 transition text-primary px-4 md:px-5 py-2 rounded-lg text-xs md:text-sm font-medium shadow-md"
               >
                 Signup →
               </Link>
@@ -50,7 +51,7 @@ const Navbar = () => {
           ) : (
             <button
               onClick={handleLogout}
-              className="bg-primary-300 hover:bg-yellow-500 transition text-white px-4 md:px-5 py-2 rounded-lg text-xs md:text-sm font-medium"
+              className="bg-cream hover:opacity-90 transition text-primary px-4 md:px-5 py-2 rounded-lg text-xs md:text-sm font-medium"
             >
               Logout
             </button>
