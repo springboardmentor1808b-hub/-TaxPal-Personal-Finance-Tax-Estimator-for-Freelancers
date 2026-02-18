@@ -4,43 +4,66 @@ import API from "../../api";
 
 const Register = () => {
     const navigate = useNavigate();
+
+    // State for form fields
     const [formData, setFormData] = useState({
         fullName: '', email: '', phone: '', password: '', country: '', incomeBracket: ''
     });
+
+    // State for input errors
     const [errors, setErrors] = useState({});
+    // State for loading indicator during API call
     const [loading, setLoading] = useState(false);
 
+    // Validate individual fields
     const validateField = (name, value) => {
         let errorMsg = '';
         switch (name) {
-            case 'fullName': if (value.length > 0 && value.length < 3) errorMsg = 'Short Name'; break;
+            case 'fullName':
+                if (value.length > 0 && value.length < 3) errorMsg = 'Short Name';
+                break;
             case 'email':
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (value.length > 0 && !emailRegex.test(value)) errorMsg = 'Invalid Email'; break;
-            case 'phone': if (value.length > 0 && value.length !== 10) errorMsg = 'Need 10 digits'; break;
-            case 'password': if (value.length > 0 && value.length < 6) errorMsg = 'Min 6 chars'; break;
-            case 'country': if (value === '') errorMsg = 'Required'; break;
-            case 'incomeBracket': if (value === '') errorMsg = 'Required'; break;
+                if (value.length > 0 && !emailRegex.test(value)) errorMsg = 'Invalid Email';
+                break;
+            case 'phone':
+                if (value.length > 0 && value.length !== 10) errorMsg = 'Need 10 digits';
+                break;
+            case 'password':
+                if (value.length > 0 && value.length < 6) errorMsg = 'Min 6 chars';
+                break;
+            case 'country':
+                if (value === '') errorMsg = 'Required';
+                break;
+            case 'incomeBracket':
+                if (value === '') errorMsg = 'Required';
+                break;
             default: break;
         }
         return errorMsg;
     };
 
+    // Handle changes in input fields
     const handleChange = (e) => {
         const { name, value } = e.target;
+        // Update form state
         setFormData({ ...formData, [name]: value });
+        // Validate the field as user types
         setErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
     };
 
+    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Validate all fields before submission
         const newErrors = {};
         Object.keys(formData).forEach((key) => {
             const error = validateField(key, formData[key]);
             if (error) newErrors[key] = error;
         });
 
+        // Stop submission if errors exist
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
@@ -48,6 +71,7 @@ const Register = () => {
 
         setLoading(true);
 
+        // Split full name into first and last name
         const nameParts = formData.fullName.trim().split(" ");
         const firstName = nameParts[0];
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
@@ -63,12 +87,15 @@ const Register = () => {
                 incomeBracket: formData.incomeBracket,
             };
 
+            // Call registration API
             await API.post("/auth/register", payload);
 
             alert("Registration successful! Redirecting to login...");
+            // Redirect to login after 1.5 seconds
             setTimeout(() => navigate("/login"), 1500);
 
         } catch (err) {
+            // Show error message from API or fallback message
             alert(err.response?.data?.message || "Registration failed. Please try again.");
         } finally {
             setLoading(false);
@@ -78,9 +105,10 @@ const Register = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f5f5f5] to-[#eaeaea] p-6 font-sans">
 
+            {/* Main container with shadow and rounded corners */}
             <div className="flex flex-col md:flex-row w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200 min-h-[600px]">
 
-                {/* Left Branding */}
+                {/* Left Branding Section */}
                 <div className="md:w-[40%] bg-[#ff4d00] p-10 flex flex-col justify-center text-white">
                     <h1 className="text-4xl font-black italic mb-2">TaxPal</h1>
                     <div className="h-1 w-14 bg-white mb-6 rounded-full"></div>
@@ -90,9 +118,8 @@ const Register = () => {
                     </p>
                 </div>
 
-                {/* Right Form */}
+                {/* Right Registration Form */}
                 <div className="md:w-[60%] p-8 md:p-12 bg-white flex items-center">
-
                     <div className="w-full max-w-lg mx-auto">
                         <h2 className="text-2xl font-bold text-gray-800 mb-8">
                             Create Account
@@ -100,6 +127,7 @@ const Register = () => {
 
                         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+                            {/* Full Name Input */}
                             <div>
                                 <input
                                     type="text"
@@ -113,6 +141,7 @@ const Register = () => {
                                 {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
                             </div>
 
+                            {/* Phone Input */}
                             <div>
                                 <input
                                     type="tel"
@@ -127,6 +156,7 @@ const Register = () => {
                                 {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                             </div>
 
+                            {/* Email Input */}
                             <div className="md:col-span-2">
                                 <input
                                     type="email"
@@ -140,6 +170,7 @@ const Register = () => {
                                 {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                             </div>
 
+                            {/* Password Input */}
                             <div className="md:col-span-2">
                                 <input
                                     type="password"
@@ -153,6 +184,7 @@ const Register = () => {
                                 {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                             </div>
 
+                            {/* Country Select */}
                             <div>
                                 <select
                                     name="country"
@@ -169,6 +201,7 @@ const Register = () => {
                                 {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
                             </div>
 
+                            {/* Income Bracket Select */}
                             <div>
                                 <select
                                     name="incomeBracket"
@@ -187,6 +220,7 @@ const Register = () => {
                                 {errors.incomeBracket && <p className="text-red-500 text-xs mt-1">{errors.incomeBracket}</p>}
                             </div>
 
+                            {/* Submit Button */}
                             <div className="md:col-span-2 mt-3">
                                 <button
                                     type="submit"
@@ -198,6 +232,7 @@ const Register = () => {
                                     {loading ? "Creating Account..." : "Register"}
                                 </button>
 
+                                {/* Link to Login */}
                                 <p className="text-center text-gray-500 mt-5 text-sm">
                                     Already have an account?{" "}
                                     <span

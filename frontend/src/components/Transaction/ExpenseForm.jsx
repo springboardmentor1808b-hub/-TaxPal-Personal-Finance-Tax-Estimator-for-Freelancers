@@ -4,33 +4,41 @@ import API from "../../api";
 
 const ExpenseForm = () => {
     const navigate = useNavigate();
+
+    // State for loading indicator during API call
     const [loading, setLoading] = useState(false);
+
+    // State for form fields
     const [formData, setFormData] = useState({
-        amount: '',
-        category: '',
-        date: '',
+        amount: '',       // Expense amount
+        category: '',     // Expense category
+        date: '',         // Date of the expense
     });
 
+    // Handle amount input changes (allow only numbers and decimal)
     const handleAmountChange = (e) => {
         const value = e.target.value;
+        // Regex to allow only digits and optional decimal point
         if (/^\d*\.?\d*$/.test(value)) {
             setFormData({ ...formData, amount: value });
         }
     };
 
+    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
+            // Call backend API to add expense
             await API.post("/transactions", {
                 ...formData,
-                type: "expense",
-                amount: Number(formData.amount)
+                type: "expense",                  // Mark as expense
+                amount: Number(formData.amount),  // Convert amount to number
             });
 
             alert("Expense added successfully!");
-            navigate("/dashboard");
+            navigate("/dashboard"); // Redirect back to dashboard after success
         } catch (err) {
             alert(err.response?.data?.message || "Failed to add expense");
         } finally {
@@ -41,12 +49,16 @@ const ExpenseForm = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#f5f5f5] to-[#eaeaea] flex items-center justify-center p-6">
 
+            {/* Main Card Container */}
             <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-gray-200 overflow-hidden">
 
+                {/* Top Accent Line */}
                 <div className="h-2 bg-[#ff4d00]"></div>
 
+                {/* Form Content */}
                 <div className="p-10">
 
+                    {/* Header */}
                     <h2 className="text-3xl font-bold mb-2 text-gray-800">
                         Add <span className="text-[#ff4d00]">Expense</span>
                     </h2>
@@ -54,8 +66,10 @@ const ExpenseForm = () => {
                         Track where your money goes and stay in control.
                     </p>
 
+                    {/* Expense Form */}
                     <form onSubmit={handleSubmit} className="space-y-6">
 
+                        {/* Amount Input */}
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 Amount (₹)
@@ -72,6 +86,7 @@ const ExpenseForm = () => {
                             />
                         </div>
 
+                        {/* Category Select */}
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 Expense Category
@@ -91,6 +106,7 @@ const ExpenseForm = () => {
                             </select>
                         </div>
 
+                        {/* Date Input */}
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 Date Paid
@@ -104,6 +120,7 @@ const ExpenseForm = () => {
                             />
                         </div>
 
+                        {/* Submit Button */}
                         <button
                             disabled={loading}
                             className={`w-full mt-4 py-4 rounded-xl text-white font-semibold text-lg transition shadow-md
@@ -115,6 +132,7 @@ const ExpenseForm = () => {
                             {loading ? "Saving..." : "Save Expense Entry"}
                         </button>
 
+                        {/* Back Button */}
                         <button
                             type="button"
                             onClick={() => navigate('/dashboard')}
