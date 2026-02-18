@@ -96,7 +96,8 @@ const Register = () => {
                                 {errors.fullName && <p className="text-red-500 text-[9px] mt-1 ml-1">{errors.fullName}</p>}
                             </div>
                             <div className="md:col-span-1">
-                                <input type="number" name="phone" placeholder="Phone" onChange={handleChange} className={`w-full p-3 text-sm border rounded-xl bg-[#fafafa] outline-none transition-all ${errors.phone ? 'border-red-400' : 'border-[#eee] focus:border-[#ff4d00]'}`} />
+                                <input type="tel" name="phone" placeholder="Phone" maxLength={10} onChange={handleChange} className={`w-full p-3 text-sm border rounded-xl bg-[#fafafa] outline-none transition-all ${errors.phone? "border-red-400": "border-[#eee] focus:border-[#ff4d00]"}`}/>
+
                                 {errors.phone && <p className="text-red-500 text-[9px] mt-1 ml-1">{errors.phone}</p>}
                             </div>
                             <div className="md:col-span-2">
