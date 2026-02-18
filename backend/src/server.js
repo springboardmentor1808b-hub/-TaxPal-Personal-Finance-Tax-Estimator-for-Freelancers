@@ -2,6 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
+const dns = require("dns");  
+
+dns.setDefaultResultOrder("ipv4first");  
+
 
 require("dotenv").config();
 
@@ -26,13 +30,14 @@ app.use("/api/auth", authRoutes);
 
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000, // 5 seconds ka intezar karega
+  })
   .then(() => {
-    console.log("MongoDB Connected");
+    console.log(" MongoDB Connected");
   })
   .catch((err) => {
     console.error(" MongoDB Connection Failed:", err.message);
-    process.exit(1); // Exit if DB fails
   });
 
 
