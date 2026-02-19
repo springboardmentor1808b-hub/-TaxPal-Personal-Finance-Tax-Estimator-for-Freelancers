@@ -146,7 +146,7 @@ const Register = () => {
 
   {/* Income */}
   <div>
-    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Income ({dynamicCurrency}) <span className="text-red-500">*</span></label>
+    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Est. Annual Income ({dynamicCurrency}) <span className="text-red-500">*</span></label>
     <input 
       type="text" 
       name="income" 

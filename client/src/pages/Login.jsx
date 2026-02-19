@@ -27,7 +27,7 @@ const Login = () => {
 
       if (response.ok) {
         // -------- FIXED LOGIC START --------
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.accessToken);
         localStorage.setItem("userName", data.user.name);
         localStorage.setItem("userEmail", data.user.email);
         
