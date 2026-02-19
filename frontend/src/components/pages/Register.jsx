@@ -1,34 +1,73 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../api";
 
 const Register = () => {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        fullName: '', email: '', phone: '', password: '', country: '', incomeBracket: ''
-    });
-    const [errors, setErrors] = useState({});
-
-    const validateField = (name, value) => {
-        let errorMsg = '';
-        switch (name) {
-            case 'fullName': if (value.length > 0 && value.length < 3) errorMsg = 'Short Name'; break;
-            case 'email':
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (value.length > 0 && !emailRegex.test(value)) errorMsg = 'Invalid Email'; break;
-            case 'phone': if (value.length > 0 && value.length !== 10) errorMsg = 'Need 10 digits'; break;
-            case 'password': if (value.length > 0 && value.length < 6) errorMsg = 'Min 6 chars'; break;
-            case 'country': if (value === '') errorMsg = 'Required'; break;
-            case 'incomeBracket': if (value === '') errorMsg = 'Required'; break;
-            default: break;
+    useEffect(() => {
+        if (localStorage.getItem("token")) {
+            navigate("/dashboard");
         }
-        return errorMsg;
+    }, []);
+
+    const [formData, setFormData] = useState({
+        fullName: "",
+        email: "",
+        phone: "",
+        password: "",
+        country: "",
+        incomeBracket: "",
+    });
+
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+
+    // Live field validation
+    const validateField = (name, value) => {
+        let error = "";
+
+        switch (name) {
+            case "fullName":
+                if (value && value.length < 3) error = "Short name";
+                break;
+
+            case "email":
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (value && !emailRegex.test(value)) error = "Invalid email";
+                break;
+
+            case "phone":
+                if (value && value.length !== 10) error = "Need 10 digits";
+                break;
+
+            case "password":
+                if (value && value.length < 6) error = "Min 6 characters";
+                break;
+
+            case "country":
+                if (!value) error = "Required";
+                break;
+
+            case "incomeBracket":
+                if (!value) error = "Required";
+                break;
+
+            default:
+                break;
+        }
+
+        return error;
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
         setFormData({ ...formData, [name]: value });
-        setErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+
+        setErrors((prev) => ({
+            ...prev,
+            [name]: validateField(name, value),
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -36,17 +75,22 @@ const Register = () => {
 
         const newErrors = {};
         Object.keys(formData).forEach((key) => {
-            const error = validateField(key, formData[key]);
-            if (error) newErrors[key] = error;
+            const err = validateField(key, formData[key]);
+            if (err) newErrors[key] = err;
+            if (!formData[key]) newErrors[key] = "Required";
         });
 
-        if (Object.keys(newErrors).length > 0) {
+        if (Object.keys(newErrors).length) {
             setErrors(newErrors);
             return;
         }
 
-        const [firstName, ...rest] = formData.fullName.split(" ");
-        const lastName = rest.join(" ");
+        setLoading(true);
+
+        // Safe name split
+        const parts = formData.fullName.trim().split(" ");
+        const firstName = parts[0];
+        const lastName = parts.length > 1 ? parts.slice(1).join(" ") : "";
 
         try {
             const payload = {
@@ -61,71 +105,87 @@ const Register = () => {
 
             const res = await API.post("/auth/register", payload);
 
-            localStorage.setItem("token", res.data.token);
+            // Save token
+            if (res.data?.token) {
+                localStorage.setItem("token", res.data.token);
+            }
 
             alert("Registration successful!");
 
-            navigate("/login");
-
+            setTimeout(() => navigate("/login"), 1000);
         } catch (err) {
             alert(err.response?.data?.message || "Registration failed");
+        } finally {
+            setLoading(false);
         }
     };
 
-
     return (
-        <div className="min-h-screen flex justify-center bg-[#fafafa] font-sans p-4 pt-32 pb-10">
-            <div className="flex flex-col md:flex-row w-full max-w-4xl bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-[#eee] min-h-[580px]">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f5f5f5] to-[#eaeaea] p-6">
 
-                { }
-                <div className="md:w-[40%] bg-[#ff4d00] p-8 flex flex-col justify-center text-white relative">
-                    <h1 className="text-4xl font-black mb-2 italic">TaxPal</h1>
-                    <div className="h-1 w-12 bg-white mb-6 rounded-full"></div>
+            <div className="flex flex-col md:flex-row w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px]">
+
+                {/* Left */}
+                <div className="md:w-[40%] bg-[#ff4d00] p-10 flex flex-col justify-center text-white">
+                    <h1 className="text-4xl font-black italic mb-2">TaxPal</h1>
+                    <div className="h-1 w-14 bg-white mb-6 rounded-full"></div>
                     <h2 className="text-2xl font-bold mb-2">Join Us</h2>
-                    <p className="text-[#ffe0d1] text-sm opacity-90 font-light italic">Simplify your taxes today.</p>
+                    <p className="text-[#ffe0d1] text-sm italic">
+                        Simplify your taxes today.
+                    </p>
                 </div>
 
-                { }
-                <div className="md:w-[60%] p-6 md:p-10 bg-white">
-                    <div className="max-w-md mx-auto w-full">
-                        <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6">Create Account</h2>
+                {/* Right */}
+                <div className="md:w-[60%] p-10 flex items-center">
+                    <div className="w-full max-w-lg mx-auto">
 
-                        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div className="md:col-span-1">
-                                <input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} className={`w-full p-3 text-sm border rounded-xl bg-[#fafafa] outline-none transition-all ${errors.fullName ? 'border-red-400' : 'border-[#eee] focus:border-[#ff4d00]'}`} />
-                                {errors.fullName && <p className="text-red-500 text-[9px] mt-1 ml-1">{errors.fullName}</p>}
-                            </div>
-                            <div className="md:col-span-1">
-                                <input type="tel" name="phone" placeholder="Phone" maxLength={10} onChange={handleChange} className={`w-full p-3 text-sm border rounded-xl bg-[#fafafa] outline-none transition-all ${errors.phone? "border-red-400": "border-[#eee] focus:border-[#ff4d00]"}`}/>
+                        <h2 className="text-2xl font-bold mb-6">Create Account</h2>
 
-                                {errors.phone && <p className="text-red-500 text-[9px] mt-1 ml-1">{errors.phone}</p>}
+                        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            <div>
+                                <input name="fullName" placeholder="Full Name" onChange={handleChange}
+                                    className={`w-full p-3 rounded-xl bg-gray-50 border outline-none ${errors.fullName ? "border-red-400" : "border-gray-200 focus:border-[#ff4d00]"
+                                        }`} />
+                                {errors.fullName && <p className="text-xs text-red-500">{errors.fullName}</p>}
                             </div>
+
+                            <div>
+                                <input name="phone" maxLength="10" placeholder="Phone" onChange={handleChange}
+                                    className={`w-full p-3 rounded-xl bg-gray-50 border outline-none ${errors.phone ? "border-red-400" : "border-gray-200 focus:border-[#ff4d00]"
+                                        }`} />
+                                {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
+                            </div>
+
                             <div className="md:col-span-2">
-                                <input type="email" name="email" placeholder="Email Address" onChange={handleChange} className={`w-full p-3 text-sm border rounded-xl bg-[#fafafa] outline-none transition-all ${errors.email ? 'border-red-400' : 'border-[#eee] focus:border-[#ff4d00]'}`} />
-                                {errors.email && <p className="text-red-500 text-[9px] mt-1 ml-1">{errors.email}</p>}
+                                <input name="email" placeholder="Email" onChange={handleChange}
+                                    className={`w-full p-3 rounded-xl bg-gray-50 border outline-none ${errors.email ? "border-red-400" : "border-gray-200 focus:border-[#ff4d00]"
+                                        }`} />
+                                {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
                             </div>
+
                             <div className="md:col-span-2">
-                                <input type="password" name="password" placeholder="Password" onChange={handleChange} className={`w-full p-3 text-sm border rounded-xl bg-[#fafafa] outline-none transition-all ${errors.password ? 'border-red-400' : 'border-[#eee] focus:border-[#ff4d00]'}`} />
-                                {errors.password && <p className="text-red-500 text-[9px] mt-1 ml-1">{errors.password}</p>}
+                                <input type="password" name="password" placeholder="Password" onChange={handleChange}
+                                    className={`w-full p-3 rounded-xl bg-gray-50 border outline-none ${errors.password ? "border-red-400" : "border-gray-200 focus:border-[#ff4d00]"
+                                        }`} />
+                                {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
                             </div>
 
-                            { }
-                            <div className="md:col-span-1">
-                                <input
-                                    type="text"
-                                    name="country"
-                                    placeholder="Country"
-                                    onChange={handleChange}
-                                    className={`w-full p-3 text-sm border rounded-xl bg-[#fafafa] outline-none transition-all ${errors.country ? "border-red-400" : "border-[#eee] focus:border-[#ff4d00]"
-                                        }`}
-                                />
-
-                                {errors.country && <p className="text-red-500 text-[9px] mt-1 ml-1">{errors.country}</p>}
+                            <div>
+                                <select name="country" onChange={handleChange}
+                                    className={`w-full p-3 rounded-xl bg-gray-50 border outline-none ${errors.country ? "border-red-400" : "border-gray-200 focus:border-[#ff4d00]"
+                                        }`}>
+                                    <option value="">Country</option>
+                                    <option value="India">India</option>
+                                    <option value="USA">USA</option>
+                                    <option value="UK">UK</option>
+                                </select>
                             </div>
 
-                            { }
-                            <div className="md:col-span-1">
-                                <select name="incomeBracket" onChange={handleChange} className={`w-full p-3 text-sm border rounded-xl bg-[#fafafa] outline-none text-slate-500 ${errors.incomeBracket ? 'border-red-400' : 'border-[#eee] focus:border-[#ff4d00]'}`}>
+                            <div>
+                                <select name="incomeBracket" onChange={handleChange}
+                                    className={`w-full p-3 rounded-xl bg-gray-50 border outline-none ${errors.incomeBracket ? "border-red-400" : "border-gray-200 focus:border-[#ff4d00]"
+                                        }`}>
                                     <option value="">Income</option>
                                     <option value="0-5L">Below ₹5 Lakh</option>
                                     <option value="5-10L">₹5L - ₹10 Lakh</option>
@@ -133,20 +193,28 @@ const Register = () => {
                                     <option value="20-50L">₹20L - ₹50 Lakh</option>
                                     <option value="50L+">Above ₹50 Lakh</option>
                                 </select>
-                                {errors.incomeBracket && <p className="text-red-500 text-[9px] mt-1 ml-1">{errors.incomeBracket}</p>}
                             </div>
 
-                            <div className="md:col-span-2 mt-2">
-                                <button type="submit" className="w-full bg-[#1a1a1a] text-white font-bold p-3 rounded-xl hover:bg-[#333] transition-all transform active:scale-95 text-sm">
-                                    Register
+                            <div className="md:col-span-2 mt-3">
+                                <button disabled={loading}
+                                    className={`w-full p-3 rounded-xl text-white font-semibold ${loading ? "bg-gray-400" : "bg-[#ff4d00] hover:bg-[#e84300]"
+                                        }`}>
+                                    {loading ? "Creating Account..." : "Register"}
                                 </button>
-                                <p className="text-center text-[#999] mt-4 text-[12px] font-medium">
-                                    Already have an account? <span onClick={() => navigate('/login')} className="text-[#ff4d00] font-bold cursor-pointer hover:underline">Login here</span>
+
+                                <p className="text-center text-gray-500 mt-4 text-sm">
+                                    Already have an account?{" "}
+                                    <span onClick={() => navigate("/login")}
+                                        className="text-[#ff4d00] font-semibold cursor-pointer">
+                                        Login here
+                                    </span>
                                 </p>
                             </div>
+
                         </form>
                     </div>
                 </div>
+
             </div>
         </div>
     );
