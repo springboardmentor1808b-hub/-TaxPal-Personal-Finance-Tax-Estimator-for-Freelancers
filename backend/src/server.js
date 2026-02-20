@@ -22,7 +22,7 @@ app.use(express.json());
 
 
 app.use("/api/auth", authRoutes);
-
+app.use("/api/transactions", require("./routes/transactionRoutes"));
 
 
 mongoose
