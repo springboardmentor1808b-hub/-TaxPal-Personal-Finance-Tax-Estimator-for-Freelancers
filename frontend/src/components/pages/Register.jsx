@@ -71,54 +71,66 @@ const Register = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        const newErrors = {};
-        Object.keys(formData).forEach((key) => {
-            const err = validateField(key, formData[key]);
-            if (err) newErrors[key] = err;
-            if (!formData[key]) newErrors[key] = "Required";
-        });
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+        const err = validateField(key, formData[key]);
+        if (err) newErrors[key] = err;
+        if (!formData[key]) newErrors[key] = "Required";
+    });
 
-        if (Object.keys(newErrors).length) {
-            setErrors(newErrors);
-            return;
+    if (Object.keys(newErrors).length) {
+        setErrors(newErrors);
+        return;
+    }
+
+    setLoading(true);
+
+    // Safe name split
+    const parts = formData.fullName.trim().split(" ");
+    const firstName = parts[0];
+    const lastName = parts.length > 1 ? parts.slice(1).join(" ") : "";
+
+    try {
+        const payload = {
+            firstName,
+            lastName,
+            email: formData.email,
+            phone: formData.phone,
+            password: formData.password,
+            country: formData.country,
+            incomeBracket: formData.incomeBracket,
+        };
+
+        const res = await API.post("/auth/register", payload);
+
+        if (res.data?.token) {
+            // ✅ Save token
+            localStorage.setItem("token", res.data.token);
+
+            // ✅ Save user details for Dashboard
+            localStorage.setItem(
+                "user",
+                JSON.stringify({
+                    firstName,
+                    lastName,
+                    email: formData.email
+                })
+            );
         }
 
-        setLoading(true);
+        alert("Registration successful!");
 
-        // Safe name split
-        const parts = formData.fullName.trim().split(" ");
-        const firstName = parts[0];
-        const lastName = parts.length > 1 ? parts.slice(1).join(" ") : "";
+        // ✅ Directly go to dashboard
+        setTimeout(() => navigate("/dashboard"), 1000);
 
-        try {
-            const payload = {
-                firstName,
-                lastName,
-                email: formData.email,
-                phone: formData.phone,
-                password: formData.password,
-                country: formData.country,
-                incomeBracket: formData.incomeBracket,
-            };
-
-            const res = await API.post("/auth/register", payload);
-
-            // Save token
-            if (res.data?.token) {
-                localStorage.setItem("token", res.data.token);
-            }
-
-            alert("Registration successful!");
-
-            setTimeout(() => navigate("/login"), 1000);
-        } catch (err) {
-            alert(err.response?.data?.message || "Registration failed");
-        } finally {
-            setLoading(false);
-        }
-    };
+    } catch (err) {
+        alert(err.response?.data?.message || "Registration failed");
+    } finally {
+        setLoading(false);
+    }
+};
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f5f5f5] to-[#eaeaea] p-6">
@@ -187,11 +199,10 @@ const Register = () => {
                                     className={`w-full p-3 rounded-xl bg-gray-50 border outline-none ${errors.incomeBracket ? "border-red-400" : "border-gray-200 focus:border-[#ff4d00]"
                                         }`}>
                                     <option value="">Income</option>
-                                    <option value="0-5L">Below ₹5 Lakh</option>
+                                    <option value="0-5L">0 - ₹5 Lakh</option>
                                     <option value="5-10L">₹5L - ₹10 Lakh</option>
-                                    <option value="10-20L">₹10L - ₹20 Lakh</option>
-                                    <option value="20-50L">₹20L - ₹50 Lakh</option>
-                                    <option value="50L+">Above ₹50 Lakh</option>
+                                    <option value="10-15L">₹10L - ₹15 Lakh</option>
+                                    <option value="15L+">Above ₹15 Lakh</option>
                                 </select>
                             </div>
 
