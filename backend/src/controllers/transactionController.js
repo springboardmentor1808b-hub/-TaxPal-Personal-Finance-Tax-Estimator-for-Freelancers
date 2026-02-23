@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Transaction = require("../models/Transaction");
 
 /*
@@ -82,7 +83,11 @@ GET /api/transactions/monthly
 exports.getMonthlyReport = async (req, res) => {
   try {
     const report = await Transaction.aggregate([
-      { $match: { user: req.user._id } },
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(req.user._id),
+        },
+      },
       {
         $group: {
           _id: {
@@ -143,7 +148,12 @@ GET /api/transactions/category
 exports.getCategoryBreakdown = async (req, res) => {
   try {
     const categories = await Transaction.aggregate([
-      { $match: { user: req.user._id, type: "expense" } },
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(req.user._id),
+          type: "expense",
+        },
+      },
       {
         $group: {
           _id: "$category",
@@ -159,7 +169,6 @@ exports.getCategoryBreakdown = async (req, res) => {
     res.status(500).json({ message: "Category breakdown failed" });
   }
 };
-
 /*
 ====================================
 UPDATE TRANSACTION
