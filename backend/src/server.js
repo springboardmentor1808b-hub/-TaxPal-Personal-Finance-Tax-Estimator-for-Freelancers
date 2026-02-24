@@ -10,7 +10,8 @@ dns.setDefaultResultOrder("ipv4first");
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
-
+ const budgetRoutes = require("./routes/budgetRoutes");
+ const transactionRoutes = require("./routes/transactionRoutes");
 const app = express();
 
 
@@ -24,10 +25,9 @@ app.use(cors());
 // Body parser
 app.use(express.json());
 
-
 app.use("/api/auth", authRoutes);
-
-
+app.use("/api/transactions", transactionRoutes);
+ app.use("/api/budgets", budgetRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI, {

@@ -50,14 +50,15 @@ exports.registerUser = async (req, res) => {
     const token = generateToken(user._id);
 
     res.status(201).json({
-      success: true,
-      user: {
-        id: user._id,
-        name: `${user.firstName} ${user.lastName}`,
-        email: user.email,
-      },
-      token,
-    });
+        success: true,
+        user: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+        },
+        token,
+      });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Registration failed" });
@@ -93,14 +94,15 @@ exports.loginUser = async (req, res) => {
     const token = generateToken(user._id);
 
     res.json({
-      success: true,
-      user: {
-        id: user._id,
-        name: `${user.firstName} ${user.lastName}`,
-        email: user.email,
-      },
-      token,
-    });
+  success: true,
+  user: {
+    id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+  },
+  token,
+});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Login failed" });
