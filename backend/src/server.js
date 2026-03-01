@@ -2,16 +2,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
-const dns = require("dns");  
-
-dns.setDefaultResultOrder("ipv4first");  
-
 
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
  const budgetRoutes = require("./routes/budgetRoutes");
  const transactionRoutes = require("./routes/transactionRoutes");
+ const taxRoutes = require("./routes/taxRoutes");
 const app = express();
 
 
@@ -28,16 +25,16 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/transactions", transactionRoutes);
  app.use("/api/budgets", budgetRoutes);
+ app.use("/api/tax", taxRoutes);
 
 mongoose
-  .connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 5000, // 5 seconds ka intezar karega
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log(" MongoDB Connected");
+    console.log("MongoDB Connected");
   })
   .catch((err) => {
     console.error(" MongoDB Connection Failed:", err.message);
+    process.exit(1); // Exit if DB fails
   });
 
 

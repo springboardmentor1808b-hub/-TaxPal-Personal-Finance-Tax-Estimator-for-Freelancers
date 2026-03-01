@@ -30,7 +30,6 @@ exports.createBudget = async (req, res) => {
         message: "Budget already exists for this category & month",
       });
     }
-
     res.status(500).json({ message: "Budget creation failed" });
   }
 };
@@ -44,19 +43,19 @@ GET /api/budgets
 exports.getBudgets = async (req, res) => {
   try {
     const budgets = await Budget.find({ user: req.user.id });
-
     const result = [];
 
     for (let b of budgets) {
-      const start = new Date(`${b.month}-01`);
+      const start = new Date(`${b.month}-01T00:00:00Z`); // UTC Date fix
       const end = new Date(start);
-      end.setMonth(end.getMonth() + 1);
+      end.setUTCMonth(end.getUTCMonth() + 1);
 
       const expense = await Transaction.aggregate([
         {
           $match: {
             user: b.user,
-            category: b.category,
+            // ✅ CHANGE HERE: Case-insensitive matching
+            category: { $regex: new RegExp(`^${b.category}$`, "i") },
             type: "expense",
             date: { $gte: start, $lt: end },
           },
@@ -103,13 +102,8 @@ GET /api/budgets/:id
 exports.getBudgetById = async (req, res) => {
   try {
     const budget = await Budget.findById(req.params.id);
-
-    if (!budget)
-      return res.status(404).json({ message: "Budget not found" });
-
-    if (budget.user.toString() !== req.user.id)
-      return res.status(401).json({ message: "Unauthorized" });
-
+    if (!budget) return res.status(404).json({ message: "Budget not found" });
+    if (budget.user.toString() !== req.user.id) return res.status(401).json({ message: "Unauthorized" });
     res.json({ success: true, budget });
   } catch (error) {
     res.status(500).json({ message: "Fetch failed" });
@@ -125,22 +119,16 @@ PUT /api/budgets/:id
 exports.updateBudget = async (req, res) => {
   try {
     const budget = await Budget.findById(req.params.id);
-
-    if (!budget)
-      return res.status(404).json({ message: "Budget not found" });
-
-    if (budget.user.toString() !== req.user.id)
-      return res.status(401).json({ message: "Unauthorized" });
+    if (!budget) return res.status(404).json({ message: "Budget not found" });
+    if (budget.user.toString() !== req.user.id) return res.status(401).json({ message: "Unauthorized" });
 
     const { category, budgetAmount, month, description } = req.body;
-
     budget.category = category || budget.category;
     budget.budgetAmount = budgetAmount ?? budget.budgetAmount;
     budget.month = month || budget.month;
     budget.description = description || budget.description;
 
     await budget.save();
-
     res.json({ success: true, budget });
   } catch (error) {
     res.status(500).json({ message: "Update failed" });
@@ -156,15 +144,10 @@ DELETE /api/budgets/:id
 exports.deleteBudget = async (req, res) => {
   try {
     const budget = await Budget.findById(req.params.id);
-
-    if (!budget)
-      return res.status(404).json({ message: "Budget not found" });
-
-    if (budget.user.toString() !== req.user.id)
-      return res.status(401).json({ message: "Unauthorized" });
+    if (!budget) return res.status(404).json({ message: "Budget not found" });
+    if (budget.user.toString() !== req.user.id) return res.status(401).json({ message: "Unauthorized" });
 
     await budget.deleteOne();
-
     res.json({ success: true, message: "Budget deleted" });
   } catch (error) {
     res.status(500).json({ message: "Delete failed" });
@@ -180,22 +163,21 @@ GET /api/budgets/summary
 exports.getBudgetSummary = async (req, res) => {
   try {
     const budgets = await Budget.find({ user: req.user.id });
-
     let totalBudget = 0;
     let totalSpent = 0;
 
     for (let b of budgets) {
       totalBudget += b.budgetAmount;
-
-      const start = new Date(`${b.month}-01`);
+      const start = new Date(`${b.month}-01T00:00:00Z`);
       const end = new Date(start);
-      end.setMonth(end.getMonth() + 1);
+      end.setUTCMonth(end.getUTCMonth() + 1);
 
       const expense = await Transaction.aggregate([
         {
           $match: {
             user: b.user,
-            category: b.category,
+            // ✅ CHANGE HERE: Case-insensitive matching
+            category: { $regex: new RegExp(`^${b.category}$`, "i") },
             type: "expense",
             date: { $gte: start, $lt: end },
           },
@@ -207,7 +189,6 @@ exports.getBudgetSummary = async (req, res) => {
           },
         },
       ]);
-
       totalSpent += expense[0]?.total || 0;
     }
 
@@ -234,15 +215,16 @@ exports.getBudgetAlerts = async (req, res) => {
     const alerts = [];
 
     for (let b of budgets) {
-      const start = new Date(`${b.month}-01`);
+      const start = new Date(`${b.month}-01T00:00:00Z`);
       const end = new Date(start);
-      end.setMonth(end.getMonth() + 1);
+      end.setUTCMonth(end.getUTCMonth() + 1);
 
       const expense = await Transaction.aggregate([
         {
           $match: {
             user: b.user,
-            category: b.category,
+            // ✅ CHANGE HERE: Case-insensitive matching
+            category: { $regex: new RegExp(`^${b.category}$`, "i") },
             type: "expense",
             date: { $gte: start, $lt: end },
           },
@@ -256,7 +238,6 @@ exports.getBudgetAlerts = async (req, res) => {
       ]);
 
       const spent = expense[0]?.total || 0;
-
       if (spent > b.budgetAmount) {
         alerts.push({
           category: b.category,
@@ -266,7 +247,6 @@ exports.getBudgetAlerts = async (req, res) => {
         });
       }
     }
-
     res.json({ success: true, alerts });
   } catch (error) {
     res.status(500).json({ message: "Alert check failed" });
