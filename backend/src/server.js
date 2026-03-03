@@ -9,6 +9,8 @@ const authRoutes = require("./routes/authRoutes");
  const budgetRoutes = require("./routes/budgetRoutes");
  const transactionRoutes = require("./routes/transactionRoutes");
  const taxRoutes = require("./routes/taxRoutes");
+ const reportRoutes = require("./routes/reportRoutes");
+
 const app = express();
 
 
@@ -26,6 +28,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/transactions", transactionRoutes);
  app.use("/api/budgets", budgetRoutes);
  app.use("/api/tax", taxRoutes);
+ app.use("/api/reports", reportRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)
