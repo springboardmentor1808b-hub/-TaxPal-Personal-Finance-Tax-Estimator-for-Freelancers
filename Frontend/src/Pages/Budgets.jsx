@@ -1,9 +1,121 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import FooterCredit from '../Components/FooterCredit';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
 const Budgets = () => {
+    // --- STATE ---
+    const[budgets, setBudgets] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const[isFormOpen, setIsFormOpen] = useState(false);
+    
+    const [formData, setFormData] = useState({
+        category: 'Software',
+        limit: ''
+    });
+    const[isSubmitting, setIsSubmitting] = useState(false);
+
+    // --- FETCH BUDGETS ---
+    const fetchBudgets = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/budgets', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                setBudgets(result.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch budgets", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchBudgets();
+    },[]);
+
+    // --- HANDLE FORM & EDITING ---
+    const handleInputChange = (e) => {
+        setFormData({ ...formData,[e.target.name]: e.target.value });
+    };
+
+    const handleEditBudget = (budget) => {
+        // Pre-fill the form with the existing budget data
+        setFormData({ category: budget.category, limit: budget.limit });
+        setIsFormOpen(true);
+        
+        // Smooth scroll to the top where the form is
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCreateBudget = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/budgets', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    category: formData.category,
+                    limit: Number(formData.limit)
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setFormData({ category: 'Software', limit: '' });
+                setIsFormOpen(false);
+                fetchBudgets(); // Refresh the list!
+            } else {
+                alert(result.message || "Failed to save budget");
+            }
+        } catch (error) {
+            console.error("Error saving budget:", error);
+            alert("Something went wrong");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // --- HELPER FUNCTIONS ---
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+    };
+
+    const getCategoryStyle = (category) => {
+        const styles = {
+            'Software': { icon: 'laptop_mac', baseColor: 'blue' },
+            'Food & Dining': { icon: 'restaurant', baseColor: 'orange' },
+            'Housing': { icon: 'home', baseColor: 'emerald' },
+            'Travel': { icon: 'flight', baseColor: 'pink' },
+            'Equipment': { icon: 'devices', baseColor: 'teal' },
+            'Utilities': { icon: 'bolt', baseColor: 'yellow' },
+            'Other': { icon: 'category', baseColor: 'purple' }
+        };
+        return styles[category] || styles['Other'];
+    };
+
+    // --- CALCULATIONS FOR UI ---
+    const alerts = budgets.filter(b => (b.spent / b.limit) >= 0.85);
+    const totalLimit = budgets.reduce((acc, curr) => acc + curr.limit, 0);
+    const totalSpent = budgets.reduce((acc, curr) => acc + curr.spent, 0);
+    const overallHealth = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0;
+    const COLORS =['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#ef4444', '#14b8a6'];
+
+    if (loading) return <div className="text-white p-10">Loading Budgets...</div>;
+
     return (
-        <main className="flex-1 md:ml-64 p-6 md:p-10 pt-20 md:pt-10 h-screen overflow-y-auto z-10 relative flex flex-col">
+        /* FIXED CSS HERE: Removed 'flex flex-col' so the inline form doesn't get squished */
+        <main className="flex-1 md:ml-64 p-6 md:p-10 pt-20 md:pt-10 h-screen overflow-y-auto z-10 relative block pb-20">
             
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -12,263 +124,184 @@ const Budgets = () => {
                     <p className="text-slate-400 mt-1 text-sm">Manage your monthly spending limits and track your financial health.</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
-                        <span className="text-xs font-medium text-emerald-400 uppercase tracking-wide">Budget Health: Good</span>
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${overallHealth > 90 ? 'bg-red-500/10 border-red-500/20' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
+                        <span className={`w-2 h-2 rounded-full ${overallHealth > 90 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]'}`}></span>
+                        <span className={`text-xs font-medium uppercase tracking-wide ${overallHealth > 90 ? 'text-red-400' : 'text-emerald-400'}`}>
+                            {overallHealth > 90 ? 'Health: Critical' : 'Health: Good'}
+                        </span>
                     </div>
-                    <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-sm font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
-                        <span className="material-symbols-outlined text-lg">add</span>
-                        New Budget
+                    <button 
+                        onClick={() => {
+                            if (!isFormOpen) setFormData({ category: 'Software', limit: '' }); // Reset when opening new
+                            setIsFormOpen(!isFormOpen);
+                        }}
+                        className={`px-4 py-2 rounded-lg text-white text-sm font-bold shadow-lg transition-all flex items-center gap-2 ${isFormOpen ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-blue-500/20'}`}
+                    >
+                        <span className="material-symbols-outlined text-lg">{isFormOpen ? 'close' : 'add'}</span>
+                        {isFormOpen ? 'Cancel' : 'New Budget'}
                     </button>
                 </div>
             </div>
 
-            {/* Create New Budget Rule */}
-            <div className="glass-panel p-6 rounded-2xl mb-8 border-t border-white/10 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                    <span className="material-symbols-outlined text-9xl text-white">account_balance_wallet</span>
-                </div>
-                <div className="relative z-10">
+            {/* RESTORED: Inline Create/Edit Form */}
+            {isFormOpen && (
+                <div className="glass-panel p-6 rounded-2xl mb-8 border border-blue-500/30 bg-[#131620]/80 relative overflow-hidden flex-shrink-0 transition-all">
                     <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
                         <span className="material-symbols-outlined text-blue-400">edit_square</span>
-                        Create New Budget Rule
+                        {formData.limit ? 'Edit Category Limit' : 'Set Category Limit'}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-                        <div className="md:col-span-4 space-y-2">
-                            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Category Name</label>
+                    
+                    <form onSubmit={handleCreateBudget} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                        <div className="md:col-span-5 space-y-2">
+                            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Category</label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-3 top-3 text-slate-500 text-lg">category</span>
-                                <input className="glass-input w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white placeholder-slate-500" placeholder="e.g. Office Supplies" type="text" />
-                            </div>
-                        </div>
-                        <div className="md:col-span-3 space-y-2">
-                            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Budget Limit</label>
-                            <div className="relative">
-                                <span className="material-symbols-outlined absolute left-3 top-3 text-slate-500 text-lg">attach_money</span>
-                                <input className="glass-input w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white placeholder-slate-500" placeholder="0.00" type="number" />
-                            </div>
-                        </div>
-                        <div className="md:col-span-3 space-y-2">
-                            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Month</label>
-                            <div className="relative">
-                                <span className="material-symbols-outlined absolute left-3 top-3 text-slate-500 text-lg">calendar_month</span>
-                                <select className="glass-input w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white bg-[#131620] appearance-none cursor-pointer">
-                                    <option>May 2024</option>
-                                    <option>June 2024</option>
-                                    <option>July 2024</option>
+                                <select 
+                                    name="category"
+                                    value={formData.category}
+                                    onChange={handleInputChange}
+                                    className="glass-input w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white appearance-none cursor-pointer bg-transparent"
+                                >
+                                    <option value="Software">Software</option>
+                                    <option value="Food & Dining">Food & Dining</option>
+                                    <option value="Housing">Housing</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Equipment">Equipment</option>
+                                    <option value="Utilities">Utilities</option>
+                                    <option value="Other">Other Expense</option>
                                 </select>
                                 <span className="material-symbols-outlined absolute right-3 top-3 text-slate-500 text-sm pointer-events-none">expand_more</span>
                             </div>
                         </div>
-                        <div className="md:col-span-2">
-                            <button className="w-full py-2.5 rounded-lg bg-slate-700/50 hover:bg-slate-700 text-white text-sm font-medium transition-all border border-white/10 hover:border-white/20">
-                                Create Rule
+                        
+                        <div className="md:col-span-4 space-y-2">
+                            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Monthly Limit ($)</label>
+                            <div className="relative">
+                                <span className="material-symbols-outlined absolute left-3 top-3 text-slate-500 text-lg">attach_money</span>
+                                <input 
+                                    type="number" 
+                                    name="limit"
+                                    value={formData.limit}
+                                    onChange={handleInputChange}
+                                    required
+                                    min="1"
+                                    className="glass-input w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white placeholder-slate-500" 
+                                    placeholder="e.g. 500" 
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="md:col-span-3">
+                            <button type="submit" disabled={isSubmitting} className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-all disabled:opacity-50">
+                                {isSubmitting ? 'Saving...' : 'Save Rule'}
                             </button>
                         </div>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-white/5">
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
-                            <span className="material-symbols-outlined text-sm">info</span>
-                            <span>Optional: Add a description or tags to better organize your spending.</span>
-                            <button className="text-blue-400 hover:text-blue-300 ml-2">Add Details</button>
-                        </div>
-                    </div>
+                    </form>
                 </div>
-            </div>
+            )}
 
-            <h3 className="text-lg font-bold text-white mb-6 px-1">Active Budgets</h3>
+            <h3 className="text-lg font-bold text-white mb-6 px-1">Active Budgets (Current Month)</h3>
             
             {/* Budgets Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                 
-                {/* Budget Card 1 */}
-                <div className="glass-panel p-5 rounded-2xl glass-card-hover group relative overflow-hidden">
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-blue-400">laptop_mac</span>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-bold text-sm">Software</h4>
-                                <p className="text-slate-400 text-xs">Monthly Recurring</p>
-                            </div>
-                        </div>
-                        <button className="text-slate-500 hover:text-white transition-colors">
-                            <span className="material-symbols-outlined text-lg">more_horiz</span>
-                        </button>
+                {budgets.length === 0 ? (
+                    <div className="col-span-full p-8 text-center glass-panel rounded-2xl border-dashed border-2 border-white/10">
+                        <p className="text-slate-400">You haven't set any budgets yet. Click "New Budget" to start tracking.</p>
                     </div>
-                    <div className="space-y-1 mb-4 relative z-10">
-                        <div className="flex justify-between items-end">
-                            <span className="text-2xl font-bold text-white">$450<span className="text-sm text-slate-500 font-normal"> / $600</span></span>
-                            <span className="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">75%</span>
-                        </div>
-                    </div>
-                    <div className="relative w-full h-2 bg-slate-700/30 rounded-full overflow-hidden mb-3">
-                        <div className="absolute top-0 left-0 h-full w-[75%] bg-blue-500 rounded-full neon-bar shadow-[0_0_10px_rgba(59,130,246,0.6)]"></div>
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-400 border-t border-white/5 pt-3 mt-2">
-                        <div>
-                            <span className="block text-slate-500 mb-0.5">Spent</span>
-                            <span className="text-white font-medium">$450.00</span>
-                        </div>
-                        <div className="text-right">
-                            <span className="block text-slate-500 mb-0.5">Remaining</span>
-                            <span className="text-white font-medium">$150.00</span>
-                        </div>
-                    </div>
-                </div>
+                ) : (
+                    budgets.map((budget) => {
+                        const styleInfo = getCategoryStyle(budget.category);
+                        const percentUsed = (budget.spent / budget.limit) * 100;
+                        const isOverBudget = percentUsed > 100;
+                        const isWarning = percentUsed >= 85 && percentUsed <= 100;
+                        
+                        let barColor = `bg-${styleInfo.baseColor}-500`;
+                        let textColor = `text-${styleInfo.baseColor}-400`;
+                        let shadowColor = `rgba(59,130,246,0.6)`;
+                        
+                        if (isOverBudget) {
+                            barColor = 'bg-red-500';
+                            textColor = 'text-red-400';
+                            shadowColor = 'rgba(239,68,68,0.6)';
+                        } else if (isWarning) {
+                            barColor = 'bg-orange-500';
+                            textColor = 'text-orange-400';
+                            shadowColor = 'rgba(249,115,22,0.6)';
+                        }
 
-                {/* Budget Card 2 */}
-                <div className="glass-panel p-5 rounded-2xl glass-card-hover group relative overflow-hidden">
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-purple-400">campaign</span>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-bold text-sm">Marketing</h4>
-                                <p className="text-slate-400 text-xs">Ads &amp; Promo</p>
-                            </div>
-                        </div>
-                        <button className="text-slate-500 hover:text-white transition-colors">
-                            <span className="material-symbols-outlined text-lg">more_horiz</span>
-                        </button>
-                    </div>
-                    <div className="space-y-1 mb-4 relative z-10">
-                        <div className="flex justify-between items-end">
-                            <span className="text-2xl font-bold text-white">$1,200<span className="text-sm text-slate-500 font-normal"> / $2,000</span></span>
-                            <span className="text-xs font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">60%</span>
-                        </div>
-                    </div>
-                    <div className="relative w-full h-2 bg-slate-700/30 rounded-full overflow-hidden mb-3">
-                        <div className="absolute top-0 left-0 h-full w-[60%] bg-purple-500 rounded-full neon-bar shadow-[0_0_10px_rgba(168,85,247,0.6)]"></div>
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-400 border-t border-white/5 pt-3 mt-2">
-                        <div>
-                            <span className="block text-slate-500 mb-0.5">Spent</span>
-                            <span className="text-white font-medium">$1,200.00</span>
-                        </div>
-                        <div className="text-right">
-                            <span className="block text-slate-500 mb-0.5">Remaining</span>
-                            <span className="text-white font-medium">$800.00</span>
-                        </div>
-                    </div>
-                </div>
+                        const barWidth = Math.min(percentUsed, 100);
 
-                {/* Budget Card 3 (Over Budget) */}
-                <div className="glass-panel p-5 rounded-2xl glass-card-hover group relative overflow-hidden border border-red-500/20">
-                    <div className="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-red-400">flight</span>
+                        return (
+                            <div key={budget._id} className={`glass-panel p-5 rounded-2xl glass-card-hover group relative overflow-hidden ${isOverBudget ? 'border border-red-500/30' : ''}`}>
+                                {isOverBudget && <div className="absolute inset-0 bg-red-500/5 pointer-events-none"></div>}
+                                
+                                <div className="flex justify-between items-start mb-4 relative z-10">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-lg bg-${styleInfo.baseColor}-500/10 border border-${styleInfo.baseColor}-500/20 flex items-center justify-center`}>
+                                            <span className={`material-symbols-outlined text-${styleInfo.baseColor}-400`}>{styleInfo.icon}</span>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-white font-bold text-sm">{budget.category}</h4>
+                                        </div>
+                                    </div>
+                                    {/* EDIT BUTTON ADDED HERE */}
+                                    <button 
+                                        onClick={() => handleEditBudget(budget)}
+                                        className="text-slate-500 hover:text-blue-400 transition-colors bg-white/5 hover:bg-white/10 p-1.5 rounded-lg"
+                                        title="Edit Limit"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">edit</span>
+                                    </button>
+                                </div>
+                                
+                                <div className="space-y-1 mb-4 relative z-10">
+                                    <div className="flex justify-between items-end">
+                                        <span className={`text-2xl font-bold ${isOverBudget ? 'text-red-400' : 'text-white'}`}>
+                                            {formatCurrency(budget.spent)}
+                                            <span className="text-sm text-slate-500 font-normal"> / {formatCurrency(budget.limit)}</span>
+                                        </span>
+                                        <span className={`text-xs font-bold ${textColor} bg-white/5 px-2 py-0.5 rounded border border-white/5`}>
+                                            {percentUsed.toFixed(0)}%
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div className="relative w-full h-2 bg-slate-700/30 rounded-full overflow-hidden mb-3">
+                                    <div 
+                                        className={`absolute top-0 left-0 h-full ${barColor} rounded-full neon-bar transition-all duration-500`}
+                                        style={{ width: `${barWidth}%`, boxShadow: `0 0 10px ${shadowColor}` }}
+                                    ></div>
+                                </div>
+                                
+                                <div className="flex justify-between text-xs text-slate-400 border-t border-white/5 pt-3 mt-2">
+                                    <div>
+                                        <span className="block text-slate-500 mb-0.5">Status</span>
+                                        <span className={`font-medium ${isOverBudget ? 'text-red-400' : isWarning ? 'text-orange-400' : 'text-emerald-400'}`}>
+                                            {isOverBudget ? 'Exceeded limit' : 'On track'}
+                                        </span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="block text-slate-500 mb-0.5">{isOverBudget ? 'Over Budget' : 'Remaining'}</span>
+                                        <span className={`font-medium ${isOverBudget ? 'text-red-400' : 'text-white'}`}>
+                                            {isOverBudget ? `-${formatCurrency(budget.spent - budget.limit)}` : formatCurrency(budget.limit - budget.spent)}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <h4 className="text-white font-bold text-sm">Travel</h4>
-                                <p className="text-slate-400 text-xs">Client Visits</p>
-                            </div>
-                        </div>
-                        <button className="text-slate-500 hover:text-white transition-colors">
-                            <span className="material-symbols-outlined text-lg">more_horiz</span>
-                        </button>
-                    </div>
-                    <div className="space-y-1 mb-4 relative z-10">
-                        <div className="flex justify-between items-end">
-                            <span className="text-2xl font-bold text-red-400">$950<span className="text-sm text-slate-500 font-normal"> / $800</span></span>
-                            <span className="text-xs font-bold text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">118%</span>
-                        </div>
-                    </div>
-                    <div className="relative w-full h-2 bg-slate-700/30 rounded-full overflow-hidden mb-3">
-                        <div className="absolute top-0 left-0 h-full w-[100%] bg-red-500 rounded-full neon-bar shadow-[0_0_10px_rgba(239,68,68,0.6)]"></div>
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-400 border-t border-white/5 pt-3 mt-2">
-                        <div>
-                            <span className="block text-slate-500 mb-0.5">Spent</span>
-                            <span className="text-white font-medium">$950.00</span>
-                        </div>
-                        <div className="text-right">
-                            <span className="block text-slate-500 mb-0.5">Over Budget</span>
-                            <span className="text-red-400 font-medium">-$150.00</span>
-                        </div>
-                    </div>
-                </div>
+                        );
+                    })
+                )}
 
-                {/* Budget Card 4 */}
-                <div className="glass-panel p-5 rounded-2xl glass-card-hover group relative overflow-hidden">
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-emerald-400">business</span>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-bold text-sm">Office Rent</h4>
-                                <p className="text-slate-400 text-xs">Co-working Space</p>
-                            </div>
-                        </div>
-                        <button className="text-slate-500 hover:text-white transition-colors">
-                            <span className="material-symbols-outlined text-lg">more_horiz</span>
-                        </button>
-                    </div>
-                    <div className="space-y-1 mb-4 relative z-10">
-                        <div className="flex justify-between items-end">
-                            <span className="text-2xl font-bold text-white">$1,500<span className="text-sm text-slate-500 font-normal"> / $1,500</span></span>
-                            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">100%</span>
-                        </div>
-                    </div>
-                    <div className="relative w-full h-2 bg-slate-700/30 rounded-full overflow-hidden mb-3">
-                        <div className="absolute top-0 left-0 h-full w-[100%] bg-emerald-500 rounded-full neon-bar shadow-[0_0_10px_rgba(16,185,129,0.6)]"></div>
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-400 border-t border-white/5 pt-3 mt-2">
-                        <div>
-                            <span className="block text-slate-500 mb-0.5">Spent</span>
-                            <span className="text-white font-medium">$1,500.00</span>
-                        </div>
-                        <div className="text-right">
-                            <span className="block text-slate-500 mb-0.5">Remaining</span>
-                            <span className="text-white font-medium">$0.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Budget Card 5 */}
-                <div className="glass-panel p-5 rounded-2xl glass-card-hover group relative overflow-hidden">
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-amber-400">bolt</span>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-bold text-sm">Utilities</h4>
-                                <p className="text-slate-400 text-xs">Internet &amp; Power</p>
-                            </div>
-                        </div>
-                        <button className="text-slate-500 hover:text-white transition-colors">
-                            <span className="material-symbols-outlined text-lg">more_horiz</span>
-                        </button>
-                    </div>
-                    <div className="space-y-1 mb-4 relative z-10">
-                        <div className="flex justify-between items-end">
-                            <span className="text-2xl font-bold text-white">$120<span className="text-sm text-slate-500 font-normal"> / $300</span></span>
-                            <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">40%</span>
-                        </div>
-                    </div>
-                    <div className="relative w-full h-2 bg-slate-700/30 rounded-full overflow-hidden mb-3">
-                        <div className="absolute top-0 left-0 h-full w-[40%] bg-amber-500 rounded-full neon-bar shadow-[0_0_10px_rgba(245,158,11,0.6)]"></div>
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-400 border-t border-white/5 pt-3 mt-2">
-                        <div>
-                            <span className="block text-slate-500 mb-0.5">Spent</span>
-                            <span className="text-white font-medium">$120.00</span>
-                        </div>
-                        <div className="text-right">
-                            <span className="block text-slate-500 mb-0.5">Remaining</span>
-                            <span className="text-white font-medium">$180.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Add Category Card */}
-                <div className="glass-panel p-5 rounded-2xl glass-card-hover group relative overflow-hidden border-dashed border-2 border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500/30 transition-all">
+                {/* Quick Add Button at the end */}
+                <div 
+                    onClick={() => {
+                        setFormData({ category: 'Software', limit: '' });
+                        setIsFormOpen(true);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="glass-panel p-5 rounded-2xl glass-card-hover group relative overflow-hidden border-dashed border-2 border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500/30 transition-all min-h-[200px]"
+                >
                     <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined text-3xl text-slate-400 group-hover:text-blue-400 transition-colors">add</span>
                     </div>
@@ -278,67 +311,112 @@ const Budgets = () => {
             </div>
 
             {/* Budget Alerts & Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                {/* Budget Alerts */}
-                <div className="glass-panel p-6 rounded-2xl relative overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 flex-shrink-0">
+                
+                <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col h-[350px]">
                     <h3 className="text-lg font-bold text-white mb-6">Budget Alerts</h3>
-                    <div className="space-y-4">
-                        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-4 items-start">
-                            <div className="p-2 rounded-lg bg-red-500/20 text-red-400">
-                                <span className="material-symbols-outlined text-lg">warning</span>
+                    <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
+                        {alerts.length === 0 ? (
+                            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex gap-4 items-start">
+                                <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
+                                    <span className="material-symbols-outlined text-lg">check_circle</span>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-bold text-white">All Clear!</h4>
+                                    <p className="text-xs text-slate-400 mt-1">You are currently within limits for all your budgeted categories.</p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-white">Over Budget: Travel</h4>
-                                <p className="text-xs text-slate-400 mt-1">You've exceeded your monthly travel budget by $150. Consider reallocating funds.</p>
-                                <button className="mt-2 text-xs font-medium text-red-400 hover:text-red-300">Review Expenses</button>
-                            </div>
-                        </div>
-                        <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex gap-4 items-start">
-                            <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
-                                <span className="material-symbols-outlined text-lg">insights</span>
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-white">Spending Trend</h4>
-                                <p className="text-xs text-slate-400 mt-1">Marketing spending is 15% lower than last month. Good job keeping costs down.</p>
-                            </div>
-                        </div>
+                        ) : (
+                            alerts.map(alert => {
+                                const isOver = alert.spent > alert.limit;
+                                return (
+                                    <div key={`alert-${alert._id}`} className={`p-4 rounded-xl border flex gap-4 items-start ${isOver ? 'bg-red-500/10 border-red-500/20' : 'bg-orange-500/10 border-orange-500/20'}`}>
+                                        <div className={`p-2 rounded-lg ${isOver ? 'bg-red-500/20 text-red-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                                            <span className="material-symbols-outlined text-lg">warning</span>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-bold text-white">
+                                                {isOver ? `Over Budget: ${alert.category}` : `Nearing Limit: ${alert.category}`}
+                                            </h4>
+                                            <p className="text-xs text-slate-400 mt-1">
+                                                {isOver 
+                                                    ? `You've exceeded your monthly limit by ${formatCurrency(alert.spent - alert.limit)}.` 
+                                                    : `You have spent ${((alert.spent / alert.limit)*100).toFixed(0)}% of your limit. Only ${formatCurrency(alert.limit - alert.spent)} remaining.`}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
                     </div>
                 </div>
 
-                {/* Monthly Allocation */}
-                <div className="glass-panel p-6 rounded-2xl lg:col-span-2 flex flex-col md:flex-row items-center gap-8 relative">
-                    <div className="flex-1 w-full">
+                <div className="glass-panel p-6 rounded-2xl lg:col-span-2 flex flex-col md:flex-row items-center gap-8 relative h-[350px]">
+                    <div className="flex-1 w-full h-full flex flex-col">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold text-white">Monthly Allocation</h3>
-                            <select className="bg-[#131620] text-xs text-slate-400 border border-white/10 rounded-lg px-2 py-1 focus:outline-none hover:text-white cursor-pointer">
-                                <option>By Category</option>
-                                <option>By Tag</option>
-                            </select>
+                            <h3 className="text-lg font-bold text-white">Current Month Allocation</h3>
                         </div>
-                        <div className="space-y-4">
-                            <div className="space-y-1">
-                                <div className="flex justify-between text-xs text-slate-400">
-                                    <span>Necessary Expenses (Rent, Utilities)</span>
-                                    <span className="text-white">45%</span>
-                                </div>
-                                <div className="w-full bg-slate-700/30 rounded-full h-1.5">
-                                    <div className="bg-gradient-to-r from-blue-500 to-blue-400 h-1.5 rounded-full w-[45%]"></div>
-                                </div>
-                            </div>
-                            <div className="space-y-1">
-                                <div className="flex justify-between text-xs text-slate-400">
-                                    <span>Business Growth (Marketing, Software)</span>
-                                    <span className="text-white">35%</span>
-                                </div>
-                                <div className="w-full bg-slate-700/30 rounded-full h-1.5">
-                                    <div className="bg-gradient-to-r from-purple-500 to-purple-400 h-1.5 rounded-full w-[35%]"></div>
-                                </div>
+                        <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2 flex-1">
+                            {budgets.length > 0 ? budgets.map((b, idx) => {
+                                const percentage = totalLimit > 0 ? (b.limit / totalLimit) * 100 : 0;
+                                return (
+                                    <div key={`alloc-${b._id}`} className="space-y-1">
+                                        <div className="flex justify-between text-xs text-slate-400">
+                                            <span>{b.category} Limit</span>
+                                            <span className="text-white">{percentage.toFixed(0)}%</span>
+                                        </div>
+                                        <div className="w-full bg-slate-700/30 rounded-full h-1.5 overflow-hidden">
+                                            <div className="h-1.5 rounded-full" style={{ width: `${percentage}%`, backgroundColor: COLORS[idx % COLORS.length] }}></div>
+                                        </div>
+                                    </div>
+                                )
+                            }) : (
+                                <p className="text-slate-500 text-sm">Add budgets to see allocation breakdown.</p>
+                            )}
+                        </div>
+                    </div>
 
-                            </div>
+                    {/* Radial Recharts Chart */}
+                    <div className="relative w-48 h-48 flex-shrink-0">
+                        {budgets.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={budgets}
+                                        innerRadius={65}
+                                        outerRadius={85}
+                                        paddingAngle={5}
+                                        dataKey="limit"
+                                        nameKey="category"
+                                        stroke="none"
+                                    >
+                                        {budgets.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip 
+                                        contentStyle={{ backgroundColor: '#131620', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
+                                        formatter={(value) => formatCurrency(value)}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="w-full h-full rounded-full border-8 border-slate-800"></div>
+                        )}
+                        
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-xl font-bold text-white">{formatCurrency(totalLimit)}</span>
+                            <span className="text-[10px] text-slate-400 uppercase tracking-wider">Total Limit</span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* --- GLOBAL FOOTER --- */}
+            <div className="border-t border-white/5 mt-8 pt-6">
+                <FooterCredit />
+            </div>
+
         </main>
     );
 };

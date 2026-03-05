@@ -39,18 +39,15 @@ exports.getDashboardStats = async (req, res) => {
 
         const netIncome = totalIncome - totalExpense;
 
-        // Expenses grouped by Category (For the Donut Chart)
         const expenseBreakdown = await Transaction.aggregate([
             { $match: { user: userId, type: 'expense' } },
             { $group: { _id: "$category", total: { $sum: "$amount" } } }
         ]);
 
-        // 5 Most Recent Transactions (For the Table)
         const recentTransactions = await Transaction.find({ user: userId })
             .sort({ date: -1 })
             .limit(5);
 
-        // Sending everything to the frontend
         res.status(200).json({
             success: true,
             data: {
@@ -62,6 +59,23 @@ exports.getDashboardStats = async (req, res) => {
             }
         });
 
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+exports.getAllTransactions = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        
+        const transactions = await Transaction.find({ user: userId }).sort({ date: -1 });
+
+        res.status(200).json({
+            success: true,
+            count: transactions.length,
+            data: transactions
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
