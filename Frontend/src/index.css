@@ -1,7 +1,5 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
 
 
 
@@ -269,6 +267,68 @@ body {
 }
 
 
+/*-------------------------------------------------------------------------------------*/
+/* =========================================================
+   NEW STYLES FOR TRANSACTIONS, BUDGETS, ESTIMATOR & REPORTS
+   ========================================================= */
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0F111A; 
+}
+::-webkit-scrollbar-thumb {
+  background: #334155; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569; 
+}
+
+/* Specific inner scrollbars (like tables) */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glass Inputs & Select Dropdowns */
+.glass-input, .input-glass {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: white;
+  transition: all 0.3s ease;
+}
+.glass-input:focus, .input-glass:focus {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(59, 130, 246, 0.5);
+  outline: none;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+}
+select.glass-input option, select.input-glass option {
+  background-color: #131620;
+  color: white;
+}
+
+/* Neon progress bars (for Budgets) */
+.neon-bar {
+  box-shadow: 0 0 10px currentColor;
+}
+
+/* Report Preview Background (for Reports) */
+.report-preview-placeholder {
+  background-image: radial-gradient(circle at center, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+}
 
 
 /* :root {
