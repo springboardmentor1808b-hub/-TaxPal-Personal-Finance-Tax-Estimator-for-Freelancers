@@ -56,7 +56,7 @@ const calculateCompoundInterest = (amount, months) => {
 
 /*
 ====================================================
-CALCULATE TAX (Main API)
+CALCULATE TAX (Estimator / Save Optional)
 POST /api/tax/calculate
 ====================================================
 */
@@ -77,18 +77,18 @@ exports.calculateTax = async (req, res) => {
       return res.status(400).json({ message: "Required fields missing" });
     }
 
-    // 1️⃣ Deduction before tax
+    // Deduction before tax
     const taxableIncome = totalIncome - totalDeductions;
 
-    // 2️⃣ Progressive slab calculation
+    // Progressive slab tax
     let totalAnnualTax = calculateProgressiveTax(taxableIncome);
 
-    // 3️⃣ TDS subtraction (only if salaried)
+    // TDS subtraction (salaried)
     if (isSalaried) {
       totalAnnualTax = Math.max(totalAnnualTax - tds, 0);
     }
 
-    // 4️⃣ Quarterly installment logic
+    // Quarterly percentages
     const quarterPercent = {
       Q1: 0.15,
       Q2: 0.45,
@@ -106,8 +106,27 @@ exports.calculateTax = async (req, res) => {
       payableTillQuarter,
     };
 
-    // 5️⃣ Save if requested
+    /*
+    ===============================
+    SAVE RECORD (Optional)
+    ===============================
+    */
+
     if (saveEstimate) {
+
+      const existingRecord = await TaxEstimate.findOne({
+        user: req.user.id,
+        financialYear,
+        quarter
+      });
+
+      if (existingRecord) {
+        return res.status(409).json({
+          message:
+            "Tax estimate already exists for this financial year and quarter. Use replace API if you want to update it."
+        });
+      }
+
       const taxDoc = await TaxEstimate.create({
         user: req.user.id,
         financialYear,
@@ -120,7 +139,7 @@ exports.calculateTax = async (req, res) => {
         taxPaid: 0,
         remainingTax: payableTillQuarter,
         isSalaried,
-        tds,
+        tds
       });
 
       response.saved = true;
@@ -137,14 +156,73 @@ exports.calculateTax = async (req, res) => {
 
 /*
 ====================================================
-PAY TAX INSTALLMENT (Auto Interest Calculation)
+REPLACE EXISTING TAX ESTIMATE
+PUT /api/tax/replace
+====================================================
+*/
+
+exports.replaceTaxEstimate = async (req, res) => {
+  try {
+
+    const {
+      financialYear,
+      quarter,
+      totalIncome,
+      totalDeductions,
+      taxableIncome,
+      totalAnnualTax,
+      payableTillQuarter,
+      isSalaried,
+      tds
+    } = req.body;
+
+    const updated = await TaxEstimate.findOneAndUpdate(
+      {
+        user: req.user.id,
+        financialYear,
+        quarter
+      },
+      {
+        totalIncome,
+        deductions: totalDeductions,
+        taxableIncome,
+        totalAnnualTax,
+        payableTillQuarter,
+        isSalaried,
+        tds,
+        remainingTax: payableTillQuarter
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Tax estimate replaced successfully",
+      data: updated
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: "Replace failed" });
+  }
+};
+
+/*
+====================================================
+PAY TAX INSTALLMENT
 POST /api/tax/pay/:id
 ====================================================
 */
 
 exports.payTax = async (req, res) => {
   try {
+
     const { amountPaid } = req.body;
+
+    if (!amountPaid) {
+      return res.status(400).json({
+        message: "amountPaid is required"
+      });
+    }
 
     const taxRecord = await TaxEstimate.findById(req.params.id);
 
@@ -154,7 +232,6 @@ exports.payTax = async (req, res) => {
     if (taxRecord.user.toString() !== req.user.id)
       return res.status(401).json({ message: "Unauthorized" });
 
-    // Calculate due date
     const dueDates = {
       Q1: "06-15",
       Q2: "09-15",
@@ -170,7 +247,6 @@ exports.payTax = async (req, res) => {
     }
 
     const dueDate = new Date(`${dueYear}-${dueDates[taxRecord.quarter]}`);
-
     const today = new Date();
 
     let remaining = taxRecord.remainingTax;
@@ -178,6 +254,7 @@ exports.payTax = async (req, res) => {
     let interest = 0;
 
     if (today > dueDate && remaining > 0) {
+
       const diffTime = today - dueDate;
       monthsLate = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30));
 
@@ -187,19 +264,20 @@ exports.payTax = async (req, res) => {
       }
     }
 
-    // Apply payment
     remaining -= amountPaid;
 
     taxRecord.taxPaid += amountPaid;
     taxRecord.remainingTax = remaining > 0 ? remaining : 0;
+    taxRecord.interest += interest;
 
     await taxRecord.save();
 
     res.json({
       success: true,
+      amountPaid,
       monthsLate,
       interestAdded: interest,
-      remainingTax: taxRecord.remainingTax,
+      remainingTax: taxRecord.remainingTax
     });
 
   } catch (error) {
@@ -210,29 +288,26 @@ exports.payTax = async (req, res) => {
 
 /*
 ====================================================
-DYNAMIC TAX REMINDERS (Calendar View)
+TAX REMINDERS (Dashboard Calendar)
 GET /api/tax/reminders?financialYear=2025-26
 ====================================================
 */
 
 exports.getTaxReminders = async (req, res) => {
   try {
-    const { financialYear } = req.query;
 
-    if (!financialYear) {
-      return res.status(400).json({ message: "Financial year required" });
-    }
+    const { financialYear } = req.query;
 
     const records = await TaxEstimate.find({
       user: req.user.id,
-      financialYear,
+      financialYear
     });
 
     const dueDates = {
       Q1: "06-15",
       Q2: "09-15",
       Q3: "12-15",
-      Q4: "03-15",
+      Q4: "03-15"
     };
 
     const today = new Date();
@@ -252,15 +327,14 @@ exports.getTaxReminders = async (req, res) => {
       let remaining = record.remainingTax;
       let monthsLate = 0;
       let interest = 0;
-      let totalPayableToday = remaining;
 
       if (today > dueDate && remaining > 0) {
+
         const diffTime = today - dueDate;
         monthsLate = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30));
 
         if (monthsLate > 0) {
           interest = calculateCompoundInterest(remaining, monthsLate);
-          totalPayableToday = remaining + interest;
         }
       }
 
@@ -273,7 +347,7 @@ exports.getTaxReminders = async (req, res) => {
         remaining,
         monthsLate,
         interestIfPaidToday: interest,
-        totalPayableToday,
+        totalPayableToday: remaining + interest,
         status:
           remaining <= 0
             ? "Paid"
@@ -286,7 +360,6 @@ exports.getTaxReminders = async (req, res) => {
     res.json({ success: true, reminders });
 
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Reminder fetch failed" });
   }
 };
