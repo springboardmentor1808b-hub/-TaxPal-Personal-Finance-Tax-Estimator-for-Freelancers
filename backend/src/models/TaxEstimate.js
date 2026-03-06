@@ -10,7 +10,7 @@ const taxEstimateSchema = new mongoose.Schema(
     },
 
     financialYear: {
-      type: String, // e.g., "2025-26"
+      type: String,
       required: true,
     },
 
@@ -23,41 +23,49 @@ const taxEstimateSchema = new mongoose.Schema(
     totalIncome: {
       type: Number,
       required: true,
+      min: 0
     },
 
     deductions: {
       type: Number,
       default: 0,
+      min: 0
     },
 
     taxableIncome: {
       type: Number,
       required: true,
+      min: 0
     },
 
     totalAnnualTax: {
       type: Number,
       required: true,
+      min: 0
     },
 
     payableTillQuarter: {
       type: Number,
       required: true,
+      min: 0
     },
 
     taxPaid: {
       type: Number,
       default: 0,
+      min: 0
     },
 
     remainingTax: {
       type: Number,
       default: 0,
+      min: 0
     },
 
     interest: {
       type: Number,
       default: 0,
+      min: 0
     },
 
     isSalaried: {
@@ -68,9 +76,15 @@ const taxEstimateSchema = new mongoose.Schema(
     tds: {
       type: Number,
       default: 0,
+      min: 0
     },
   },
   { timestamps: true }
+);
+
+taxEstimateSchema.index(
+  { user: 1, financialYear: 1, quarter: 1 },
+  { unique: true }
 );
 
 module.exports = mongoose.model("TaxEstimate", taxEstimateSchema);
