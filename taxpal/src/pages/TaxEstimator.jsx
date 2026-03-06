@@ -35,7 +35,7 @@ export default function TaxEstimator() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  function calculateTax(e) {
+  const calculateTax = async (e) => {
     e.preventDefault();
 
     const income = Number(form.grossIncome || 0);
@@ -46,15 +46,12 @@ export default function TaxEstimator() {
       Number(form.homeOffice || 0);
 
     const taxable = Math.max(income - deductions, 0);
-
     let estimatedTax = 0;
 
     if (form.country === "india") {
-      // very simple sample slabs for demo only
       if (taxable <= 300000) estimatedTax = 0;
       else if (taxable <= 700000) estimatedTax = 0.05 * (taxable - 300000);
-      else if (taxable <= 1000000)
-        estimatedTax = 0.1 * (taxable - 700000) + 20000;
+      else if (taxable <= 1000000) estimatedTax = 0.1 * (taxable - 700000) + 20000;
       else estimatedTax = 0.15 * (taxable - 1000000) + 50000;
     } else if (form.country === "usa") {
       const selfEmploymentTax = taxable * 0.153;
@@ -63,8 +60,46 @@ export default function TaxEstimator() {
     }
 
     setResult({ taxable, estimatedTax });
-  }
 
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Please log in to save your tax estimate.");
+        return;
+      }
+
+      const taxDataToSave = {
+        country: form.country,
+        state: form.state,
+        filingStatus: form.filingStatus,
+        quarter: form.quarter,
+        grossIncome: income,
+        totalDeductions: deductions,
+        taxableIncome: taxable,
+        estimatedTax: estimatedTax
+      };
+
+      const response = await fetch("http://localhost:5000/api/taxes/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": token 
+        },
+        body: JSON.stringify(taxDataToSave)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Tax estimate calculated and saved to database!");
+      } else {
+        alert("Failed to save: " + data.message);
+      }
+
+    } catch (error) {
+      console.error("Error connecting to backend:", error);
+    }
+  };
   const currency = form.country === "india" ? "₹" : "$";
 
   return (
