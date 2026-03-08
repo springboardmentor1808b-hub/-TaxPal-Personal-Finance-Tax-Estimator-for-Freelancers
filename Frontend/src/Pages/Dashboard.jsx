@@ -90,7 +90,7 @@ const Dashboard = () => {
     };
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount || 0);
     };
 
     const savingsRate = stats.totalIncome > 0 
@@ -145,7 +145,7 @@ const Dashboard = () => {
 
                             {/* Amount */}
                             <div>
-                                <label className="text-xs font-medium text-slate-400 ml-1">Amount ($)</label>
+                                <label className="text-xs font-medium text-slate-400 ml-1">Amount (₹)</label>
                                 <input 
                                     type="number" 
                                     name="amount"

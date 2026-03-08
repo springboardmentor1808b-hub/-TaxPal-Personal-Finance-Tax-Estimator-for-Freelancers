@@ -82,7 +82,7 @@ const Budgets = () => {
     };
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount || 0);
     };
 
     const getCategoryStyle = (category) => {
@@ -168,7 +168,7 @@ const Budgets = () => {
                         </div>
                         
                         <div className="md:col-span-4 space-y-2">
-                            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Monthly Limit ($)</label>
+                            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Monthly Limit (₹)</label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-3 top-3 text-slate-500 text-lg">attach_money</span>
                                 <input 
