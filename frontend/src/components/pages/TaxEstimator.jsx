@@ -55,10 +55,10 @@ const TaxEstimator = () => {
     try {
       setLoading(true);
 
-      const res = await API.post("/tax/calculate", buildPayload(false,false));
+      const res = await API.post("/tax/calculate", buildPayload(false, false));
 
       setResult(res.data.data);
-      setEstimateExists(res.data.data.estimateExists);
+      setEstimateExists(false);
 
     } catch (err) {
       alert(err.response?.data?.message || "Calculation failed");
@@ -71,14 +71,33 @@ const TaxEstimator = () => {
     try {
       setLoading(true);
 
-      const res = await API.post("/tax/calculate", buildPayload(true,false));
+      const res = await API.post("/tax/calculate", buildPayload(true, false));
 
-      setResult(res.data.data);
+      setResult({
+        taxableIncome: res.data.data.taxableIncome,
+        totalAnnualTax: res.data.data.totalAnnualTax,
+        payableTillQuarter: res.data.data.payableTillQuarter
+      });
       alert("Estimate Saved");
 
     } catch (err) {
-      alert(err.response?.data?.message || "Save failed");
-    } finally {
+
+  const message = err.response?.data?.message;
+
+  if (message?.includes("already exists")) {
+
+    setEstimateExists(true);
+
+    alert(
+      "Tax estimate already exists for this quarter.\n\nClick the 'Replace Estimate' button to update it."
+    );
+
+    return;
+  }
+
+  alert(message || "Save failed");
+
+}finally {
       setLoading(false);
     }
   };
@@ -87,10 +106,28 @@ const TaxEstimator = () => {
     try {
       setLoading(true);
 
-      const res = await API.post("/tax/calculate", buildPayload(true,true));
+const res = await API.put("/tax/replace", {
+  financialYear: form.financialYear,
+  quarter: form.quarter,
+  totalIncome: Number(form.totalIncome),
+  totalDeductions: Number(form.totalDeductions) || 0,
+  taxableIncome: result.taxableIncome,
+  totalAnnualTax: result.totalAnnualTax,
+  payableTillQuarter: result.payableTillQuarter,
+  isSalaried: form.taxpayerType === "Salaried",
+  tds: form.taxpayerType === "Salaried"
+    ? Number(form.tds) || 0
+    : 0
+});
 
-      setResult(res.data.data);
-      alert("Estimate Updated");
+setResult({
+  taxableIncome: res.data.data.taxableIncome,
+  totalAnnualTax: res.data.data.totalAnnualTax,
+  payableTillQuarter: res.data.data.payableTillQuarter
+});
+
+alert("Estimate Updated Successfully");
+setEstimateExists(false);
 
     } catch (err) {
       alert(err.response?.data?.message || "Replace failed");
@@ -111,24 +148,24 @@ const TaxEstimator = () => {
         </div>
 
         <nav className="flex-1 px-3 mt-2 space-y-1">
-          <NavItem icon={<LayoutDashboard size={20}/>} label="Dashboard" onClick={()=>navigate("/dashboard")} />
-          <NavItem icon={<ArrowLeftRight size={20}/>} label="Transactions" />
-          <NavItem icon={<Wallet size={20}/>} label="Budgets" />
-          <NavItem icon={<Calculator size={20}/>} label="Tax Estimator" active />
-          <NavItem icon={<CalendarDays size={20}/>} label="Tax Calendar" />
-          <NavItem icon={<BarChart3 size={20}/>} label="Reports" />
-          <NavItem icon={<User size={20}/>} label="Profile" />
+          <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" onClick={() => navigate("/dashboard")} />
+          <NavItem icon={<ArrowLeftRight size={20} />} label="Transactions" />
+          <NavItem icon={<Wallet size={20} />} label="Budgets" />
+          <NavItem icon={<Calculator size={20} />} label="Tax Estimator" active />
+          <NavItem icon={<CalendarDays size={20} />} label="Tax Calendar" />
+          <NavItem icon={<BarChart3 size={20} />} label="Reports" />
+          <NavItem icon={<User size={20} />} label="Profile" />
         </nav>
 
         <div className="p-3 border-t border-white/10">
           <button
-            onClick={()=>{
+            onClick={() => {
               localStorage.clear();
               navigate("/login");
             }}
             className="flex items-center gap-2 text-xs text-gray-400 hover:text-[#ff4d00]"
           >
-            <LogOut size={14}/> Logout
+            <LogOut size={14} /> Logout
           </button>
         </div>
       </aside>
@@ -283,11 +320,10 @@ const TaxEstimator = () => {
 const NavItem = ({ icon, label, active = false, onClick }) => (
   <div
     onClick={onClick}
-    className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer ${
-      active
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer ${active
         ? "bg-[#ff4d00] text-white"
         : "text-gray-400 hover:text-white hover:bg-gray-700/40"
-    }`}
+      }`}
   >
     {icon}
     <span className="text-sm">{label}</span>
