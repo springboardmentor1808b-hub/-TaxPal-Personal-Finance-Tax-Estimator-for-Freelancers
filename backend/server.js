@@ -19,6 +19,11 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/taxes',require('./routes/taxRoutes'));
+app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/transactions', require('./routes/transactionRoutes'));
+app.use('/api/budgets', require('./routes/budgetRoutes'));
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

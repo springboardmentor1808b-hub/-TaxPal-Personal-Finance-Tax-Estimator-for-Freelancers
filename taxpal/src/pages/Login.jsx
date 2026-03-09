@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { logo } from '../assets/assets';
+import { useTransactions } from '../context/TransactionContext';
+import { useCategories } from '../context/CategoryContext';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -13,6 +15,9 @@ export default function Login() {
       setErrors({ ...errors, [e.target.name]: '' });
     }
   };
+
+  const { refreshTransactions } = useTransactions();
+  const { refreshCategories } = useCategories();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +46,9 @@ export default function Login() {
           // Save token + full user object (must include country from backend)
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
+          // refresh any data contexts so they fetch now that token exists
+          refreshTransactions();
+          refreshCategories();
           // ── Redirect to dashboard, not home ──
           navigate('/dashboard');
         } else {

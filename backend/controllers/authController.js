@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Category = require('../models/Category');
+
 
 exports.registerUser = async (req, res) => {
     const { name, email, password, country, income_bracket } = req.body;
@@ -23,6 +25,19 @@ exports.registerUser = async (req, res) => {
         });
 
         await user.save();
+
+        // create default expense categories for new user
+        const defaultCats = [
+            { name: 'Business Expenses', type: 'expense', color: '#6366f1' },
+            { name: 'Office Rent', type: 'expense', color: '#8b5cf6' },
+            { name: 'Software Subscriptions', type: 'expense', color: '#ec4899' },
+            { name: 'Professional Development', type: 'expense', color: '#f43f5e' },
+            { name: 'Marketing', type: 'expense', color: '#f97316' },
+            { name: 'Travel', type: 'expense', color: '#22c55e' },
+            { name: 'Meals & Entertainment', type: 'expense', color: '#14b8a6' },
+            { name: 'Utilities', type: 'expense', color: '#3b82f6' },
+        ];
+        await Category.insertMany(defaultCats.map(c => ({ ...c, user: user.id })));
 
         res.status(201).json({ message: "User registered successfully" });
 
@@ -56,7 +71,7 @@ exports.loginUser = async (req, res) => {
                 res.json({
                     message: "Login successful",
                     token,
-                    user: { name: user.name, email: user.email }
+                    user: { name: user.name, email: user.email, country: user.country, income_bracket: user.income_bracket }
                 });
             }
         );

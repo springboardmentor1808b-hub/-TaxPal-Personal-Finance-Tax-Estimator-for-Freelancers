@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { CategoryProvider } from "./context/CategoryContext";
 import { TransactionProvider } from "./context/TransactionContext";
@@ -15,8 +16,6 @@ import SettingsNotifications from "./pages/SettingsNotifications";
 import SettingsSecurity from "./pages/SettingsSecurity";
 import TaxEstimator from "./pages/TaxEstimator";
 
-
-
 function App() {
   return (
     <CategoryProvider>
@@ -30,17 +29,24 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/budgets" element={<Budgets />} />
             <Route path="/transactions" element={<Transactions />} />
-                 <Route path="/tax-estimator" element={<TaxEstimator />} />
-          <Route path="/settings" element={<SettingLayout />}>
-            <Route index element={<Navigate to="/settings/categories" replace />} />
-            <Route path="profile" element={<SettingsProfile />} />
-            <Route path="categories" element={<SettingCategories />} />
-            <Route path="notifications" element={<SettingsNotifications />} />
-            <Route path="security" element={<SettingsSecurity />} />
-       
-          </Route>
-        </Routes>
-      </BrowserRouter>
+            <Route path="/tax-estimator" element={<TaxEstimator />} />
+
+            {/* Settings layout with internal sidebar (used by overlay) */}
+            <Route path="/settings" element={<SettingLayout />}>
+              <Route
+                index
+                element={<Navigate to="/settings/categories" replace />}
+              />
+              <Route path="profile" element={<SettingsProfile />} />
+              <Route path="categories" element={<SettingCategories />} />
+              <Route
+                path="notifications"
+                element={<SettingsNotifications />}
+              />
+              <Route path="security" element={<SettingsSecurity />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
       </TransactionProvider>
     </CategoryProvider>
   );

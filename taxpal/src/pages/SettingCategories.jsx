@@ -15,26 +15,32 @@ function Field({ label, children }) {
   );
 }
 
-function CategoryModal({ isOpen, onClose, onSave, initialData = null }) {
+function CategoryModal({ isOpen, onClose, onSave, initialData = null, defaultType = "expense" }) {
   const [name, setName] = useState(initialData?.name ?? "");
-  const [type, setType] = useState(initialData?.type ?? "expense");
+  const [type, setType] = useState(initialData?.type ?? defaultType);
   const [color, setColor] = useState(initialData?.color ?? PRESET_COLORS[0]);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialData?.name ?? "");
-      setType(initialData?.type ?? "expense");
+      setType(initialData?.type ?? defaultType);
       setColor(initialData?.color ?? PRESET_COLORS[0]);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, defaultType]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name.trim()) return;
-    onSave(initialData ? { name: name.trim(), color } : { name: name.trim(), type, color });
+    if (!name.trim()) {
+      alert('Name cannot be empty');
+      return;
+    }
+    const payload = initialData
+      ? { name: name.trim(), color }
+      : { name: name.trim(), type, color };
+    onSave(payload);
     if (!initialData) {
       setName("");
-      setType("expense");
+      setType(defaultType);
       setColor(PRESET_COLORS[0]);
     }
     onClose();
@@ -309,6 +315,7 @@ export default function SettingsCategories() {
         }}
         onSave={handleSaveCategory}
         initialData={editingCategory}
+        defaultType={activeTab}
       />
     </>
   );

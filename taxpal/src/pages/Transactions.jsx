@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useTransactions } from "../context/TransactionContext";
@@ -35,8 +35,8 @@ export default function Transactions() {
   const incomeCatNames = incomeCategories.map((c) => c.name);
   const expenseCatNames = expenseCategories.map((c) => c.name);
 
-  const incomeCats = incomeCatNames.length > 0 ? incomeCatNames : [];
-  const expenseCats = expenseCatNames.length > 0 ? expenseCatNames : [];
+  const incomeCats = incomeCatNames;
+  const expenseCats = expenseCatNames;
 
   // custom categories user adds from the dropdown prompt
   const [customCategories, setCustomCategories] = useState([]);
@@ -44,10 +44,18 @@ export default function Transactions() {
   const [form, setForm] = useState({
     type: "income",
     amount: "",
-    category: incomeCats[0] || "",
+    category: "",
     description: "",
     date: "",
   });
+
+  // update default category when category lists change
+  useEffect(() => {
+    const baseCats = form.type === 'income' ? incomeCats : expenseCats;
+    if (baseCats.length && !form.category) {
+      setForm((f) => ({ ...f, category: baseCats[0] }));
+    }
+  }, [incomeCats, expenseCats, form.type]);
   const [filter, setFilter] = useState("all");
   const [added, setAdded] = useState(false);
 
@@ -88,7 +96,12 @@ export default function Transactions() {
     e.preventDefault();
     if (!form.amount || Number(form.amount) <= 0) return;
     if (!form.category) return;
-    addTransaction({ id: Date.now(), ...form, amount: Number(form.amount) });
+    if (!form.date) {
+      alert('Please select a date for the transaction');
+      return;
+    }
+    // pass form data to context, API will generate id
+    addTransaction({ ...form, amount: Number(form.amount) });
     setForm((f) => ({ ...f, amount: "", description: "", date: "" }));
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -238,6 +251,7 @@ export default function Transactions() {
                   value={form.date}
                   onChange={handleChange}
                   className={inputCls}
+                  required
                 />
               </Field>
 

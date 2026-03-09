@@ -1,5 +1,5 @@
 // @refresh reset
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const CURRENCY_MAP = {
   "India": { code: "INR", locale: "en-IN", symbol: "₹" },
@@ -19,13 +19,39 @@ function getCurrency() {
 
 const TransactionContext = createContext(null);
 
+import { api } from '../utils/api';
+
 export function TransactionProvider({ children }) {
-  const [transactions, setTransactions] = useState([
-    { id: 1, type: "income",  amount: 120000, category: "Consulting", description: "Q1 Project",     date: "2026-01-15" },
-    { id: 2, type: "expense", amount: 32000,  category: "Business",   description: "Office Supplies", date: "2026-01-22" },
-    { id: 3, type: "income",  amount: 45000,  category: "Freelance",  description: "Design Work",     date: "2026-02-05" },
-    { id: 4, type: "expense", amount: 8500,   category: "Transport",  description: "Travel",          date: "2026-02-10" },
-  ]);
+  const [transactions, setTransactions] = useState([]);
+  const [authToken, setAuthToken] = useState(localStorage.getItem('token'));
+
+  // whenever authToken changes we re-fetch transactions
+  useEffect(() => {
+    if (!authToken) {
+      console.warn('no auth token, skipping transactions fetch');
+      return;
+    }
+
+    (async () => {
+      try {
+        const res = await api('/api/transactions');
+        const data = await res.json();
+        if (res.ok) {
+          const norm = data.transactions.map((tx) => ({ ...tx, id: tx._id }));
+          setTransactions(norm);
+        } else {
+          console.error('failed to fetch transactions', data.message);
+        }
+      } catch (err) {
+        console.error('error fetching transactions', err);
+      }
+    })();
+  }, [authToken]);
+
+  // helper to refresh token state (e.g. after login)
+  const refreshTransactions = () => {
+    setAuthToken(localStorage.getItem('token'));
+  };
 
   const currency = getCurrency();
 
@@ -36,11 +62,41 @@ export function TransactionProvider({ children }) {
       maximumFractionDigits: 0,
     }).format(Number(n));
 
-  const addTransaction    = tx => setTransactions(prev => [tx, ...prev]);
-  const deleteTransaction = id => setTransactions(prev => prev.filter(t => t.id !== id));
+  const addTransaction = async (tx) => {
+    try {
+      const res = await api('/api/transactions', {
+        method: 'POST',
+        body: JSON.stringify(tx),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const n = { ...data.transaction, id: data.transaction._id };
+        setTransactions((prev) => [n, ...prev]);
+      } else {
+        console.error('add transaction failed', data.message);
+        alert('Could not add transaction: ' + data.message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deleteTransaction = async (id) => {
+    try {
+      const res = await api(`/api/transactions/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setTransactions((prev) => prev.filter((t) => t.id !== id));
+      } else {
+        const data = await res.json();
+        console.error('delete transaction failed', data.message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
-    <TransactionContext.Provider value={{ transactions, addTransaction, deleteTransaction, fmt, currency }}>
+    <TransactionContext.Provider value={{ transactions, addTransaction, deleteTransaction, fmt, currency, refreshTransactions }}>
       {children}
     </TransactionContext.Provider>
   );
