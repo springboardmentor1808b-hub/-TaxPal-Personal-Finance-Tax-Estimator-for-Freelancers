@@ -1,10 +1,9 @@
-const bcrypt    = require("bcryptjs");
-const User      = require("../models/User");
-const jwt       = require("jsonwebtoken");
+const bcrypt     = require("bcryptjs");
+const User       = require("../models/User");
+const jwt        = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
-// ── Email transporter — created once at module level (not per-request) ──
-// NAYA (ye lagao)
+// ── Email transporter (local only) ───────────────────────────────────────
 const getTransporter = () => nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -13,11 +12,11 @@ const getTransporter = () => nodemailer.createTransport({
     }
 });
 
-// ── JWT helper — throws if env vars missing ──────────────────────────────
+// ── JWT helpers ───────────────────────────────────────────────────────────
 const signAccess  = (payload) => jwt.sign(payload, process.env.JWT_SECRET,         { expiresIn: '1d'  });
 const signRefresh = (payload) => jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
-// ── LOGIN ────────────────────────────────────────────────────────────────
+// ── LOGIN ─────────────────────────────────────────────────────────────────
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -45,7 +44,7 @@ const loginUser = async (req, res) => {
     }
 };
 
-// ── REGISTER ─────────────────────────────────────────────────────────────
+// ── REGISTER ──────────────────────────────────────────────────────────────
 const registerUser = async (req, res) => {
     try {
         const { name, email, password, country, income_bracket, currency } = req.body;
@@ -99,13 +98,10 @@ const forgotPassword = async (req, res) => {
   <title>TaxPal — Password Reset</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f1f5f9;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
-
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f1f5f9;padding:48px 16px;">
   <tr>
     <td align="center">
       <table width="520" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%;">
-
-        <!-- LOGO -->
         <tr>
           <td align="center" style="padding-bottom:28px;">
             <table cellpadding="0" cellspacing="0" border="0">
@@ -119,44 +115,19 @@ const forgotPassword = async (req, res) => {
             </table>
           </td>
         </tr>
-
-        <!-- MAIN CARD -->
         <tr>
-          <td style="background:#ffffff;border-radius:20px;padding:40px 40px 32px 40px;
-                     box-shadow:0 4px 32px rgba(0,0,0,0.08);">
-
-            <!-- Lock Icon -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0">
-              <tr>
-                <td align="center" style="padding-bottom:20px;">
-                  <table cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                      <td style="width:68px;height:68px;background:#ecfdf5;border-radius:50%;
-                                 text-align:center;vertical-align:middle;font-size:30px;line-height:68px;">
-                        &#128272;
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-
-            <!-- Title -->
-            <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:800;color:#0f172a;
-                       text-align:center;letter-spacing:-0.4px;">
+          <td style="background:#ffffff;border-radius:20px;padding:40px 40px 32px 40px;box-shadow:0 4px 32px rgba(0,0,0,0.08);">
+            <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:800;color:#0f172a;text-align:center;letter-spacing:-0.4px;">
               Password Reset Request
             </h1>
             <p style="margin:0 0 28px 0;font-size:14px;color:#64748b;text-align:center;line-height:1.6;">
               Hi <strong style="color:#0f172a;">${user.name}</strong>, we received a request to reset your TaxPal password.
               Use the OTP below to continue.
             </p>
-
-            <!-- OTP DIGITS -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;">
               <tr>
                 <td align="center">
-                  <p style="margin:0 0 14px 0;font-size:11px;font-weight:700;color:#94a3b8;
-                             text-transform:uppercase;letter-spacing:2px;text-align:center;">
+                  <p style="margin:0 0 14px 0;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:2px;text-align:center;">
                     Your One-Time Password
                   </p>
                   <table cellpadding="0" cellspacing="0" border="0">
@@ -165,27 +136,16 @@ const forgotPassword = async (req, res) => {
                 </td>
               </tr>
             </table>
-
-            <!-- Expiry note -->
             <p style="margin:18px 0 0 0;font-size:12px;color:#94a3b8;text-align:center;">
               &#128337; This OTP expires in <strong style="color:#0f172a;">60 minutes</strong>
             </p>
-
-            <!-- Divider -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0;">
-              <tr>
-                <td style="border-top:1px solid #f1f5f9;"></td>
-              </tr>
+              <tr><td style="border-top:1px solid #f1f5f9;"></td></tr>
             </table>
-
-            <!-- Security Warning -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0"
-                   style="background:#fff7ed;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff7ed;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
               <tr>
                 <td>
-                  <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#c2410c;">
-                    &#9888;&#65039; Security Notice
-                  </p>
+                  <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#c2410c;">&#9888;&#65039; Security Notice</p>
                   <p style="margin:0;font-size:12px;color:#92400e;line-height:1.7;">
                     Never share this OTP with anyone — including TaxPal support.<br/>
                     TaxPal will <strong>never</strong> ask for your OTP over call, chat, or email.
@@ -193,15 +153,10 @@ const forgotPassword = async (req, res) => {
                 </td>
               </tr>
             </table>
-
-            <!-- Not you? -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0"
-                   style="background:#f8fafc;border-radius:12px;padding:16px 20px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border-radius:12px;padding:16px 20px;">
               <tr>
                 <td>
-                  <p style="margin:0 0 4px 0;font-size:13px;font-weight:700;color:#334155;">
-                    &#128274; Didn't request this?
-                  </p>
+                  <p style="margin:0 0 4px 0;font-size:13px;font-weight:700;color:#334155;">&#128274; Didn't request this?</p>
                   <p style="margin:0;font-size:12px;color:#64748b;line-height:1.7;">
                     If you did not request a password reset, please ignore this email.
                     Your account remains secure and no changes have been made.
@@ -209,21 +164,14 @@ const forgotPassword = async (req, res) => {
                 </td>
               </tr>
             </table>
-
           </td>
         </tr>
-
-        <!-- REQUEST META -->
         <tr>
           <td style="padding:20px 8px 0 8px;">
-            <table width="100%" cellpadding="0" cellspacing="0" border="0"
-                   style="background:#e2e8f0;border-radius:12px;padding:14px 20px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#e2e8f0;border-radius:12px;padding:14px 20px;">
               <tr>
                 <td>
-                  <p style="margin:0 0 4px 0;font-size:11px;font-weight:700;color:#94a3b8;
-                             text-transform:uppercase;letter-spacing:1px;">
-                    Request Details
-                  </p>
+                  <p style="margin:0 0 4px 0;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Request Details</p>
                   <p style="margin:0;font-size:12px;color:#475569;line-height:1.8;">
                     &#128197; <strong>Time:</strong> ${timeString} (IST)<br/>
                     &#128231; <strong>Sent to:</strong> ${email}<br/>
@@ -234,8 +182,6 @@ const forgotPassword = async (req, res) => {
             </table>
           </td>
         </tr>
-
-        <!-- FOOTER -->
         <tr>
           <td align="center" style="padding:28px 8px 0 8px;">
             <p style="margin:0 0 6px 0;font-size:12px;color:#94a3b8;">
@@ -247,26 +193,38 @@ const forgotPassword = async (req, res) => {
             </p>
           </td>
         </tr>
-
       </table>
     </td>
   </tr>
 </table>
-
 </body>
 </html>`;
 
-        await getTransporter().sendMail({
-            from:    `"TaxPal Security" <${process.env.EMAIL_USER}>`,
-            to:      email,
-            subject: `🔐 Your TaxPal Password Reset OTP`,
-            text:    `Hi ${user.name},\n\nYour TaxPal password reset OTP is: ${otp}\n\nValid for 60 minutes. Never share this OTP.\n\n— TaxPal Security Team`,
-            html:    htmlEmail,
-        });
+        // ── Production: Resend | Local: Nodemailer ────────────────────────
+        if (process.env.NODE_ENV === 'production') {
+            const { Resend } = require('resend');
+            const resend = new Resend(process.env.RESEND_API_KEY);
+            await resend.emails.send({
+                from:    'TaxPal Security <onboarding@resend.dev>',
+                to:      email,
+                subject: '🔐 Your TaxPal Password Reset OTP',
+                html:    htmlEmail,
+            });
+            console.log("Email sent via Resend to:", email);
+        } else {
+            await getTransporter().sendMail({
+                from:    `"TaxPal Security" <${process.env.EMAIL_USER}>`,
+                to:      email,
+                subject: '🔐 Your TaxPal Password Reset OTP',
+                text:    `Hi ${user.name},\n\nYour TaxPal password reset OTP is: ${otp}\n\nValid for 60 minutes. Never share this OTP.\n\n— TaxPal Security Team`,
+                html:    htmlEmail,
+            });
+            console.log("Email sent via Nodemailer to:", email);
+        }
 
         res.status(200).json({ message: "OTP sent to your email!" });
     } catch (error) {
-        console.error(error);
+        console.error("forgotPassword error:", error);
         res.status(500).json({ message: "Server error" });
     }
 };
