@@ -8,7 +8,6 @@ const errorHandler = require('./middleware/errorHandler');
 const transactionRoutes = require('./routes/transactionRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
 const taxRoutes = require('./routes/taxRoutes');
-// const logger = require('./utils/logger'); 
 
 dotenv.config();
 

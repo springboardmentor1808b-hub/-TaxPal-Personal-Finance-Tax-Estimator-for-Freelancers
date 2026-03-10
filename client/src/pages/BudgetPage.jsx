@@ -5,7 +5,7 @@ import { formatCurrency } from "../utils/financeHelpers";
 import axios from "axios";
 import BASE_URL from "../config";
 
-// ── Same categories as TransactionModal ─────────────────────────────────
+// ── Same categories as TransactionModal 
 const SUGGESTED_CATEGORIES = [
   { label: "Food",           emoji: "🍕" },
   { label: "Rent & Bills",   emoji: "🏠" },
@@ -16,7 +16,7 @@ const SUGGESTED_CATEGORIES = [
   { label: "Health",         emoji: "💊" },
 ];
 
-// ── Summary Stat Card with Hover ─────────────────────────────────────────
+// ── Summary Stat Card with Hover 
 const StatSummaryCard = ({ s }) => {
   const [hovered, setHovered] = useState(false);
   return (
@@ -83,7 +83,7 @@ const StatSummaryCard = ({ s }) => {
   );
 };
 
-// ── Spending Breakdown Chart ──────────────────────────────────────────────
+// ── Spending Breakdown Chart
 const SpendingChart = ({ budgetData }) => {
   const [hoveredRow, setHoveredRow] = useState(null);
   const total = budgetData.reduce((s, b) => s + b.spent, 0);
@@ -161,7 +161,7 @@ const SpendingChart = ({ budgetData }) => {
   );
 };
 
-// ── Budget Modal ──────────────────────────────────────────────────────────
+// ── Budget Modal 
 const BudgetModal = ({ budgets, onSave, onClose }) => {
   const [tempBudgets, setTempBudgets] = useState([...budgets]);
 
@@ -306,7 +306,7 @@ const BudgetModal = ({ budgets, onSave, onClose }) => {
   );
 };
 
-// ── Budget Card with Hover ────────────────────────────────────────────────
+// ── Budget Card with Hover 
 const BudgetCard = ({ b }) => {
   const [hovered, setHovered] = useState(false);
   const accent = b.pct >= 100 ? '#ef4444' : b.pct >= 80 ? '#f97316' : '#10b981';
@@ -405,7 +405,7 @@ const BudgetCard = ({ b }) => {
   );
 };
 
-// ── Main Budget Page ──────────────────────────────────────────────────────
+// ── Main Budget Page
 const BudgetPage = ({ transactions = [], budgets = [], setBudgets }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [modalOpen,   setModalOpen]   = useState(false);

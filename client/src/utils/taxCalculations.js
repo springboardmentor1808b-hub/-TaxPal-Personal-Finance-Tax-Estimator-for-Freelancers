@@ -14,7 +14,6 @@ export const NEW_REGIME_SLABS = [
   { min: 1500000,  max: null,    rate: 0.30, label: "Above ₹15 Lakh",    pct: "30%" },
 ];
 
-// OLD REGIME slabs (Direct Tax as per madam)
 // Standard Deduction: ₹50,000 auto
 // Rebate 87A: if taxable income ≤ ₹5L → tax = ₹0
 // Deductions allowed: 80C, 80D, NPS, HRA
@@ -37,9 +36,9 @@ export const QUARTERS = [
   { label: "Q4", full: "Q4 (Jan-Mar)", due: "15th Mar",  pct: 1.00 },
 ];
 
-// ─────────────────────────────────────────────────────────
+// ======================================================
 //  CORE: Slab-wise breakdown (works for any slab array)
-// ─────────────────────────────────────────────────────────
+// ======================================================
 export const calculateSlabBreakdown = (taxableIncome, slabs) => {
   let remaining = Math.max(0, taxableIncome);
   let totalTax  = 0;
@@ -65,20 +64,20 @@ export const calculateSlabBreakdown = (taxableIncome, slabs) => {
   return { totalTax, breakdown };
 };
 
-// ─────────────────────────────────────────────────────────
+// --------------------------------------------------
 //  REBATE 87A
 //  New regime: income ≤ ₹7L → full tax rebate
 //  Old regime: income ≤ ₹5L → full tax rebate
-// ─────────────────────────────────────────────────────────
+// --------------------------------------------------
 const applyRebate87A = (tax, taxableIncome, regime) => {
   const limit = regime === 'new' ? 700000 : 500000;
   if (taxableIncome <= limit) return 0;
   return tax;
 };
 
-// ─────────────────────────────────────────────────────────
+// ---------------------------------------
 //  SALARIED TAX CALCULATOR
-// ─────────────────────────────────────────────────────────
+// ---------------------------------------
 export const calculateSalariedTax = (grossIncome, tdsAlreadyPaid = 0, deductions = {}, regime = 'new') => {
   const slabs = regime === 'new' ? NEW_REGIME_SLABS : OLD_REGIME_SLABS;
 
@@ -124,11 +123,11 @@ export const calculateSalariedTax = (grossIncome, tdsAlreadyPaid = 0, deductions
   };
 };
 
-// ─────────────────────────────────────────────────────────
+// ------------------------------------------------------------
 //  BUSINESS TAX CALCULATOR
 //  Taxable = Gross Income − Business Expenses
 //  Business uses regime slabs (no standard deduction)
-// ─────────────────────────────────────────────────────────
+// ------------------------------------------------------------
 export const calculateBusinessTax = (grossIncome, totalExpenses, regime = 'new') => {
   const slabs         = regime === 'new' ? NEW_REGIME_SLABS : OLD_REGIME_SLABS;
   const taxableIncome = Math.max(0, grossIncome - totalExpenses);
@@ -154,10 +153,10 @@ export const calculateBusinessTax = (grossIncome, totalExpenses, regime = 'new')
   };
 };
 
-// ─────────────────────────────────────────────────────────
+// ------------------------------------------------------------
 //  REGIME COMPARISON
 //  Given same income + deductions, compare both regimes
-// ─────────────────────────────────────────────────────────
+// ------------------------------------------------------------
 export const compareRegimes = (grossIncome, tdsAlreadyPaid = 0, deductions = {}) => {
   const newResult = calculateSalariedTax(grossIncome, tdsAlreadyPaid, deductions, 'new');
   const oldResult = calculateSalariedTax(grossIncome, tdsAlreadyPaid, deductions, 'old');
@@ -166,7 +165,7 @@ export const compareRegimes = (grossIncome, tdsAlreadyPaid = 0, deductions = {})
   return { newResult, oldResult, saving: Math.abs(saving), better };
 };
 
-// ─────────────────────────────────────────────────────────
+// ------------------------------------------------------------
 //  PENALTY CALCULATOR — Sec 234B / 234C
 //  1% simple interest per month on shortfall
 //  Months counted from quarter due date till 31st March
@@ -174,7 +173,7 @@ export const compareRegimes = (grossIncome, tdsAlreadyPaid = 0, deductions = {})
 //    Q2 (15th Sept)  →  7 months remaining
 //    Q3 (15th Dec)   →  4 months remaining
 //    Q4 (15th March) →  1 month  remaining
-// ─────────────────────────────────────────────────────────
+// ------------------------------------------------------------
 export const QUARTER_MONTHS = [10, 7, 4, 1]; // months till year-end for Q1-Q4
 
 export const calculatePenalty = (amountDue, amountPaid, quarterIndex = 0) => {
@@ -184,9 +183,9 @@ export const calculatePenalty = (amountDue, amountPaid, quarterIndex = 0) => {
   return { shortfall, interest, months, total: shortfall + interest };
 };
 
-// ─────────────────────────────────────────────────────────
+// ---------------------------------------------------------
 //  BUSINESS EXPENSE CATEGORIES
-// ─────────────────────────────────────────────────────────
+// ---------------------------------------------------------
 export const BUSINESS_EXPENSE_CATEGORIES = [
   { key: "rent",         label: "Office Rent",              icon: "🏢", hint: "Rent paid for business premises"        },
   { key: "salaries",     label: "Staff Salaries",           icon: "👥", hint: "Wages paid to employees"                },
@@ -198,9 +197,9 @@ export const BUSINESS_EXPENSE_CATEGORIES = [
   { key: "other",        label: "Other Business Expenses",  icon: "📦", hint: "Any other legitimate business cost"     },
 ];
 
-// ─────────────────────────────────────────────────────────
+// ---------------------------------------------------------
 //  SALARIED DEDUCTION SECTIONS (Old Regime only)
-// ─────────────────────────────────────────────────────────
+// ---------------------------------------------------------
 export const SALARIED_DEDUCTION_SECTIONS = [
   { key:"sec80c", label:"Section 80C",                   icon:"💰", max:150000, maxLabel:"Max ₹1,50,000",                       hint:"PPF, ELSS, LIC premium, EPF, NSC, 5yr FD, Sukanya Samriddhi",          color:"#10b981" },
   { key:"sec80d", label:"Section 80D — Health Insurance", icon:"🏥", max:25000,  maxLabel:"Max ₹25,000 (₹50k if parents senior)", hint:"Medical insurance premium for self, spouse, children & parents",        color:"#3b82f6" },

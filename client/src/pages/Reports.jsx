@@ -14,7 +14,7 @@ const CAT_COLORS = [
   "#ef4444","#06b6d4","#ec4899","#84cc16","#f97316","#6366f1",
 ];
 
-// ─── Date Helpers ───────────────────────────────────────────
+// ─── Date Helpers
 function getWeekBounds(year, month, day) {
   const ref = new Date(`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`);
   const dow = ref.getDay();
@@ -53,7 +53,7 @@ function makeBadge(mode, year, month, day) {
   return '';
 }
 
-// ─── CSV Export ─────────────────────────────────────────────
+// ─── CSV Export
 function dl(rows, cols, filename) {
   if (!rows.length) { alert('No data for selected period.'); return; }
   const csv = [cols.join(','), ...rows.map(r => cols.map(c => `"${r[c] ?? ''}"`).join(','))].join('\n');
@@ -118,7 +118,7 @@ function doExport(tab, filtered, label, budgets, taxpayerType, regime = 'new') {
   }
 }
 
-// ─── Charts ─────────────────────────────────────────────────
+// ─── Charts
 function EmptyChart() {
   return <div className="flex items-center justify-center h-36 text-[11px] font-black text-gray-200 uppercase tracking-widest">NO DATA</div>;
 }
@@ -220,7 +220,7 @@ function BarChartSVG({ slices, colors }) {
   );
 }
 
-// ─── Grouped Bar: Income vs Expense per month ───────────────
+// ─── Grouped Bar: Income vs Expense per month 
 function GroupedBarChart({ data }) {
   if (!data.length) return <EmptyChart />;
   const max = Math.max(...data.flatMap(d => [d.income, d.expense]), 1);
@@ -265,7 +265,7 @@ function GroupedBarChart({ data }) {
   );
 }
 
-// ─── Reusable UI ─────────────────────────────────────────────
+// ─── Reusable UI
 const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 function FilterBar({ mode, setMode, year, setYear, month, setMonth, day, setDay }) {
@@ -334,7 +334,7 @@ function TxnList({ txns, colorClass, sign }) {
   );
 }
 
-// ─── MAIN COMPONENT ──────────────────────────────────────────
+// ─── MAIN COMPONENT
 const Reports = ({ transactions: propTxns = [], budgets: propBudgets = [] }) => {
   const navigate = useNavigate();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -536,9 +536,9 @@ const Reports = ({ transactions: propTxns = [], budgets: propBudgets = [] }) => 
             </Card>
           </>)}
 
-          {/* ════════════════════════════════════════
+          {/* ========================================
               TAB: EXPENSE
-          ════════════════════════════════════════ */}
+          ======================================== */}
           {activeTab === 'expense' && (<>
             <div className="grid grid-cols-3 gap-3 px-1">
               <div className="min-w-0">
@@ -569,9 +569,9 @@ const Reports = ({ transactions: propTxns = [], budgets: propBudgets = [] }) => 
             </Card>
           </>)}
 
-          {/* ════════════════════════════════════════
+          {/* ==================================
               TAB: INCOME vs EXPENSE
-          ════════════════════════════════════════ */}
+          ===================================== */}
           {activeTab === 'vs' && (<>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
@@ -632,9 +632,9 @@ const Reports = ({ transactions: propTxns = [], budgets: propBudgets = [] }) => 
             </Card>
           </>)}
 
-          {/* ════════════════════════════════════════
+          {/* ========================================
               TAB: BUDGET
-          ════════════════════════════════════════ */}
+          ======================================== */}
           {activeTab === 'budget' && (<>
             {budgetData.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -705,9 +705,9 @@ const Reports = ({ transactions: propTxns = [], budgets: propBudgets = [] }) => 
             </>)}
           </>)}
 
-          {/* ════════════════════════════════════════
+          {/* ========================================
               TAB: TAX REPORT
-          ════════════════════════════════════════ */}
+          ======================================== */}
           {activeTab === 'tax' && (<>
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-2">

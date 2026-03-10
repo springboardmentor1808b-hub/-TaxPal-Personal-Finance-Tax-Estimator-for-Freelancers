@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { calculateSalariedTax } from '../utils/taxCalculations';
 
-// ── Quarter metadata — same as TaxCalendar ──────────────────
+// ── Quarter metadata — same as TaxCalendar
 const QUARTER_META = [
   { label: "Q1", period: "Apr – Jun", due: "15th Jun", dueMonth: 6,  dueDay: 15, pct: 0.15, color: "emerald" },
   { label: "Q2", period: "Jul – Sep", due: "15th Sep", dueMonth: 9,  dueDay: 15, pct: 0.45, color: "blue"    },
@@ -10,7 +10,7 @@ const QUARTER_META = [
   { label: "Q4", period: "Jan – Mar", due: "15th Mar", dueMonth: 3,  dueDay: 15, pct: 1.00, color: "amber"   },
 ];
 
-// ── ITR Filing deadline ──────────────────────────────────────
+// ── ITR Filing deadline
 const ITR_EVENT = {
   label: "ITR Filing Deadline",
   due: "31st Jul",
@@ -20,7 +20,7 @@ const ITR_EVENT = {
   isITR: true,
 };
 
-// ── Days until a date ────────────────────────────────────────
+// ── Days until a date
 function daysUntil(month, day) {
   const now   = new Date();
   now.setHours(0, 0, 0, 0);
@@ -30,7 +30,7 @@ function daysUntil(month, day) {
   return Math.ceil((due - now) / (1000 * 60 * 60 * 24));
 }
 
-// ── Format currency ──────────────────────────────────────────
+// ── Format currency
 function fmt(n) {
   if (!n || n === 0) return null;
   return new Intl.NumberFormat('en-IN', {
@@ -38,7 +38,6 @@ function fmt(n) {
   }).format(n);
 }
 
-// ── Urgency config ───────────────────────────────────────────
 function getUrgency(daysLeft) {
   if (daysLeft <= 7)  return {
     bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700',

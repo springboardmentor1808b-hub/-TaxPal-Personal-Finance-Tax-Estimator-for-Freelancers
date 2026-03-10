@@ -7,17 +7,16 @@ import BASE_URL from '../config';
 
 const fmt = (n) => formatCurrency(Math.round(n || 0));
 
-/* ── Helper: which quarter is next due ── */
+
 const getNextQuarter = (totalTax) => {
   const now    = new Date();
-  const month  = now.getMonth(); // 0=Jan ... 11=Dec
-  // Financial year: Apr(3)–Mar(2)
-  // Q1 due June(5), Q2 Sept(8), Q3 Dec(11), Q4 Mar(2)
+  const month  = now.getMonth(); 
+
   let qIdx = 3; // default Q4
-  if (month >= 3 && month < 5)  qIdx = 0; // Apr–May → Q1 upcoming
-  else if (month >= 5 && month < 8)  qIdx = 1; // Jun–Aug → Q2 upcoming
-  else if (month >= 8 && month < 11) qIdx = 2; // Sep–Nov → Q3 upcoming
-  else qIdx = 3;                               // Dec–Mar → Q4 upcoming
+  if (month >= 3 && month < 5)  qIdx = 0; 
+  else if (month >= 5 && month < 8)  qIdx = 1; 
+  else if (month >= 8 && month < 11) qIdx = 2; 
+  else qIdx = 3;                               
 
   const q        = QUARTERS[qIdx];
   const cumDue   = Math.round(totalTax * q.pct);
@@ -35,7 +34,7 @@ const StatCard = ({ label, value, color, bg }) => (
   </div>
 );
 
-/* ══════════ MAIN ══════════ */
+
 const TaxEstimator = ({ isDashboard = true }) => {
   const navigate = useNavigate();
   const [tax,     setTax]     = useState(null);
@@ -62,7 +61,7 @@ const TaxEstimator = ({ isDashboard = true }) => {
     </div>
   );
 
-  /* ── No data saved yet ── */
+
   if (!tax || error) return (
     <div className="bg-white rounded-[16px] border border-slate-100 shadow-sm p-5 flex flex-col items-center gap-3 text-center">
       <div className="text-[36px]">🧮</div>

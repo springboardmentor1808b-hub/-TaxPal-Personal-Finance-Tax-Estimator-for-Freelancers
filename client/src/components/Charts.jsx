@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { formatCurrency } from "../utils/financeHelpers";
 
-// ── Custom Tooltip ─────────────────────────────────────────────
+//Custom Tooltip
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   const income  = payload.find(p => p.dataKey === 'income')?.value  || 0;

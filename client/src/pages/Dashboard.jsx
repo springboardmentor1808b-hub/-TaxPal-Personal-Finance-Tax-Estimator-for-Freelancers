@@ -7,7 +7,7 @@ import TransactionModal from "../components/TransactionModal";
 import Charts from "../components/Charts";
 import TaxEstimator from "../components/TaxEstimator";
 
-// ── Compact Budget Summary ────────────────────────────────────
+// ── Compact Budget Summary
 const BudgetSummary = ({ budgets = [], transactions = [] }) => {
   const navigate = useNavigate();
 
@@ -107,7 +107,7 @@ const BudgetSummary = ({ budgets = [], transactions = [] }) => {
   );
 };
 
-// ── Main Dashboard ────────────────────────────────────────────
+// ── Main Dashboard
 const Dashboard = ({ transactions = [], budgets = [], onSaveTransaction }) => {
   const navigate = useNavigate();
 

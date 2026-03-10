@@ -118,7 +118,7 @@ const Row = ({ label: lbl, value, color, bg }) => (
   </div>
 );
 
-/* ══════════ MAIN ══════════ */
+/*  MAIN */
 const TaxEstimatorPage = ({ transactions = [] }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mode,        setMode]        = useState('salaried');
@@ -323,7 +323,7 @@ const TaxEstimatorPage = ({ transactions = [] }) => {
         {/* ── PAGE BODY ── */}
         <div className="px-4 lg:px-6 pt-5 pb-12 max-w-[1160px] mx-auto">
 
-          {/* ════ COUNTRY NOT AVAILABLE ════ */}
+          {/* ==== COUNTRY NOT AVAILABLE ====*/}
           {country !== 'india' && (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="text-[56px] mb-4">
