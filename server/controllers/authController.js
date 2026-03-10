@@ -17,8 +17,7 @@ const getTransporter = () => nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     }
 }); */}
-const resend = new Resend(process.env.RESEND_API_KEY);
-
+const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
 // ── JWT helper — throws if env vars missing ──────────────────────────────
 const signAccess  = (payload) => jwt.sign(payload, process.env.JWT_SECRET,         { expiresIn: '1d'  });
