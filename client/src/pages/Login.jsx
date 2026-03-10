@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import API_URL from "../api";
+import BASE_URL from "../config";
 
-// ✅ FIX: onLoginSuccess prop lo App.jsx se
 const Login = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -18,29 +17,24 @@ const Login = ({ onLoginSuccess }) => {
     e.preventDefault();
     setError("");
 
-    if (!formData.email) { setError("Please enter your email address."); return; }
+    if (!formData.email)    { setError("Please enter your email address."); return; }
     if (!formData.password) { setError("Please enter your password."); return; }
     if (formData.password.length < 6) { setError("Wrong password! Please enter a valid password."); return; }
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
+      const response = await fetch(`${BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
       const data = await response.json();
       if (response.ok) {
-        // ✅ FIX: localStorage set karo aur App.jsx ko bhi batao token mila
         localStorage.setItem("token", data.accessToken);
         localStorage.setItem("userName", data.user.name);
         localStorage.setItem("userEmail", data.user.email);
-
-        // ✅ Yeh line important hai — App.jsx ka token state update hoga
-        // Jis se bina refresh ke data turant load hoga
         if (onLoginSuccess) onLoginSuccess(data.accessToken);
-
-        navigate("/dashboard");
+        setTimeout(() => navigate("/dashboard"), 100);
       } else {
         setError(data.message || "Invalid credentials");
       }
@@ -76,7 +70,6 @@ const Login = ({ onLoginSuccess }) => {
     <div className="min-h-screen bg-gradient-to-br from-white to-emerald-50 flex items-center justify-center px-4 sm:px-6 py-10">
       <div className="w-full max-w-sm sm:max-w-md">
         <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-emerald-100 shadow-[0_20px_50px_rgba(16,185,129,0.1)] relative overflow-hidden">
-
           <div className="text-center mb-8 sm:mb-10">
             <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2 tracking-tight">Welcome Back</h2>
             <p className="text-sm sm:text-base text-gray-500 font-medium">Login to your TaxPal account</p>
@@ -93,13 +86,8 @@ const Login = ({ onLoginSuccess }) => {
               <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2 ml-1">
                 Email Address <span className="text-red-500">*</span>
               </label>
-              <input
-                type="email" name="email"
-                className={getInputClass("email")}
-                placeholder="john@example.com"
-                value={formData.email}
-                onChange={handleChange}
-              />
+              <input type="email" name="email" className={getInputClass("email")}
+                placeholder="john@example.com" value={formData.email} onChange={handleChange} />
             </div>
 
             <div>
@@ -111,21 +99,14 @@ const Login = ({ onLoginSuccess }) => {
                   Forgot?
                 </Link>
               </div>
-              <input
-                type="password" name="password"
-                className={getInputClass("password")}
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-              />
+              <input type="password" name="password" className={getInputClass("password")}
+                placeholder="••••••••" value={formData.password} onChange={handleChange} />
             </div>
 
-            <button
-              type="submit" disabled={loading}
+            <button type="submit" disabled={loading}
               className={`w-full py-3.5 sm:py-4 rounded-2xl text-white font-black text-base sm:text-lg shadow-lg shadow-emerald-200 transition-all active:scale-95 ${
                 loading ? "bg-emerald-300 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 hover:-translate-y-0.5"
-              }`}
-            >
+              }`}>
               {loading ? "Signing in..." : "Login"}
             </button>
           </form>

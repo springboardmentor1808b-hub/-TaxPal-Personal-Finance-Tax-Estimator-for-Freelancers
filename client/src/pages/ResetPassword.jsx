@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import API_URL from "../api";
+import BASE_URL from "../config";
 
 const ResetPassword = () => {
   const [otp,             setOtp]             = useState("");
@@ -8,7 +8,7 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading,         setLoading]         = useState(false);
   const [error,           setError]           = useState("");
-  const [success,         setSuccess]         = useState(false);  // ← new
+  const [success,         setSuccess]         = useState(false);
 
   const navigate  = useNavigate();
   const location  = useLocation();
@@ -33,7 +33,7 @@ const ResetPassword = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/auth/verify-otp`, {
+      const response = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp, newPassword }),
@@ -41,7 +41,7 @@ const ResetPassword = () => {
 
       const data = await response.json();
       if (response.ok) {
-        setSuccess(true);  // ← show success state
+        setSuccess(true);
         setTimeout(() => navigate("/login"), 2500);
       } else {
         setError(data.message || "Invalid OTP or request");
@@ -61,7 +61,6 @@ const ResetPassword = () => {
       : "focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"}`;
   };
 
-  // ── Success State ─────────────────────────────────────────
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-white to-emerald-50 flex items-center justify-center px-6">
@@ -74,7 +73,7 @@ const ResetPassword = () => {
             <p className="text-gray-500 font-medium mb-2">Your password has been reset successfully.</p>
             <p className="text-sm text-emerald-600 font-bold">Redirecting to login...</p>
             <div className="mt-6 h-1 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 rounded-full animate-[shrink_2.5s_linear_forwards]" style={{ animation: 'progress 2.5s linear forwards' }} />
+              <div className="h-full bg-emerald-500 rounded-full" style={{ animation: 'progress 2.5s linear forwards' }} />
             </div>
           </div>
         </div>
@@ -85,7 +84,6 @@ const ResetPassword = () => {
     );
   }
 
-  // ── Form State ────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-emerald-50 flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-lg">
@@ -96,13 +94,11 @@ const ResetPassword = () => {
             <p className="text-gray-500 font-medium">Verify OTP and secure your account</p>
           </div>
 
-          {/* Email badge */}
           <div className="mb-8 p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-center">
             <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mb-1">OTP sent to</p>
             <p className="text-sm font-semibold text-gray-700">{email}</p>
           </div>
 
-          {/* Error banner */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 text-red-600 border-l-4 border-red-500 rounded-r-xl text-sm font-medium">
               ⚠️ {error}
@@ -110,36 +106,28 @@ const ResetPassword = () => {
           )}
 
           <form onSubmit={handleReset} className="space-y-6" noValidate>
-
-            {/* OTP */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
                 6-Digit OTP <span className="text-red-500">*</span>
               </label>
               <input
-                type="text"
-                placeholder="123456"
-                maxLength={6}
+                type="text" placeholder="123456" maxLength={6}
                 value={otp}
                 onChange={(e) => { setOtp(e.target.value); setError(""); }}
-                required
-                className={getInputClass("OTP")}
+                required className={getInputClass("OTP")}
               />
             </div>
 
-            {/* New + Confirm Password */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
                   New Password <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="password"
-                  placeholder="••••••••"
+                  type="password" placeholder="••••••••"
                   value={newPassword}
                   onChange={(e) => { setNewPassword(e.target.value); setError(""); }}
-                  required
-                  className={getInputClass("Password")}
+                  required className={getInputClass("Password")}
                 />
               </div>
               <div>
@@ -147,19 +135,16 @@ const ResetPassword = () => {
                   Confirm <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="password"
-                  placeholder="••••••••"
+                  type="password" placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
-                  required
-                  className={getInputClass("match")}
+                  required className={getInputClass("match")}
                 />
               </div>
             </div>
 
             <button
-              type="submit"
-              disabled={loading}
+              type="submit" disabled={loading}
               className={`w-full py-4 rounded-2xl text-white font-black text-lg shadow-lg shadow-emerald-200 transition-all active:scale-95 ${
                 loading ? "bg-emerald-300 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"
               }`}

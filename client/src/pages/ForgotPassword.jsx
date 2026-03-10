@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API_URL from "../api";
+import BASE_URL from "../config";
 
 const ForgotPassword = () => {
   const [email,     setEmail]     = useState("");
@@ -15,21 +15,12 @@ const ForgotPassword = () => {
     if (!email) { setError("Please enter your email address first."); return; }
 
     setIsLoading(true);
-
-    // ✅ FIX 1: 15 second timeout — server zyada der tak hang nahi karega
-    const controller = new AbortController();
-    const timeoutId  = setTimeout(() => controller.abort(), 15000);
-
     try {
-      const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
+      const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
-        signal: controller.signal, // ✅ timeout signal
       });
-
-      clearTimeout(timeoutId); // ✅ FIX 2: Success mein timeout clear karo
-
       const data = await response.json();
       if (response.ok) {
         navigate("/reset-password", { state: { email } });
@@ -41,15 +32,8 @@ const ForgotPassword = () => {
           setError(data.message || "Something went wrong. Please try again.");
         }
       }
-    } catch (err) {
-      clearTimeout(timeoutId);
-
-      // ✅ FIX 3: Timeout aur network error alag alag handle karo
-      if (err.name === "AbortError") {
-        setError("Request timed out. Server is taking too long. Please try again.");
-      } else {
-        setError("Server is not responding. Please try again later.");
-      }
+    } catch (error) {
+      setError("Server is not responding. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -98,8 +82,7 @@ const ForgotPassword = () => {
                 isLoading ? "bg-emerald-300 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 hover:-translate-y-0.5"
               }`}
             >
-              {/* ✅ FIX 4: Timer bhi dikhao loading mein */}
-              {isLoading ? "Sending OTP... (15s)" : "Send OTP"}
+              {isLoading ? "Sending OTP..." : "Send OTP"}
             </button>
           </form>
 
