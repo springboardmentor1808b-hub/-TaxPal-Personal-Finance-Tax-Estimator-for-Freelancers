@@ -22,8 +22,8 @@
     import TransactionModal   from "./components/TransactionModal";
     import TaxCalendar        from "./components/TaxCalendar";
 
-    const API_URL_T = `${API_URL}/api/transactions`;
-const BUDGET_URL = `${API_URL}/api/budgets`;
+    const TRANSACTIONS_URL = `${API_URL}/api/transactions`;
+    const BUDGET_URL = `${API_URL}/api/budgets`;
 
     function App() {
       const [transactions,       setTransactions]       = useState([]);
@@ -36,7 +36,7 @@ const BUDGET_URL = `${API_URL}/api/budgets`;
       // Fetch transactions
       useEffect(() => {
         if (!token) return;
-        axios.get(`${API_URL}/all`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${TRANSACTIONS_URL}/all`, { headers: { Authorization: `Bearer ${token}` } })
           .then(res => setTransactions(res.data))
           .catch(err => console.error("Fetch transactions error:", err));
       }, [token]);
@@ -57,13 +57,13 @@ const BUDGET_URL = `${API_URL}/api/budgets`;
           const transactionId = data._id;
           if (transactionId) {
             const res = await axios.put(
-              `${API_URL}/update/${transactionId}`, data,
+              `${TRANSACTIONS_URL}/update/${transactionId}`, data,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             setTransactions(prev => prev.map(t => t._id === transactionId ? res.data : t));
           } else {
             const res = await axios.post(
-              `${API_URL}/add`, data,
+              `${TRANSACTIONS_URL}/add`, data,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             setTransactions(prev => [res.data, ...prev]);
@@ -80,7 +80,7 @@ const BUDGET_URL = `${API_URL}/api/budgets`;
         if (!id) return;
         if (!window.confirm("Are you sure?")) return;
         try {
-          await axios.delete(`${API_URL}/delete/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+          await axios.delete(`${TRANSACTIONS_URL}/delete/${id}`, { headers: { Authorization: `Bearer ${token}` } });
           setTransactions(prev => prev.filter(t => t._id !== id));
         } catch (err) {
           console.error("Delete Error:", err);
