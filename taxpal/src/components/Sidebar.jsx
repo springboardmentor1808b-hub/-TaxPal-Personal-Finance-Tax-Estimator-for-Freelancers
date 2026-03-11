@@ -1,4 +1,3 @@
-
 // src/components/Sidebar.jsx
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -11,9 +10,8 @@ export default function Sidebar() {
     { path: "/dashboard",     label: "Dashboard" },
     { path: "/budgets",       label: "Budgets" },
     { path: "/transactions",  label: "Transactions" },
-    // no Categories in main sidebar
     { path: "/tax-estimator", label: "Tax Estimator" },
-    { path: "#",              label: "Reports" },
+    { path: "/reports",       label: "Reports" },  // ← fixed from "#"
   ];
 
   return (
@@ -40,7 +38,7 @@ export default function Sidebar() {
           );
           return (
             <li key={item.label} className="cursor-pointer">
-              {item.path !== "#" ? <Link to={item.path}>{content}</Link> : content}
+              <Link to={item.path}>{content}</Link>
             </li>
           );
         })}
@@ -90,4 +88,3 @@ export default function Sidebar() {
     </div>
   );
 }
- 
