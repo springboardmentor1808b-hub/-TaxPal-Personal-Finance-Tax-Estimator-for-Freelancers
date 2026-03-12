@@ -6,6 +6,7 @@ import TransactionList from "../components/TransactionList";
 import TransactionModal from "../components/TransactionModal";
 import Charts from "../components/Charts";
 import TaxEstimator from "../components/TaxEstimator";
+import TaxNotificationBanner from "../components/TaxNotificationBanner";
 
 // ── Compact Budget Summary
 const BudgetSummary = ({ budgets = [], transactions = [] }) => {
@@ -35,7 +36,11 @@ const BudgetSummary = ({ budgets = [], transactions = [] }) => {
 
       {budgets.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center py-10 text-center">
-          <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v2m0 8v2"/><path d="M9 9.5c0-1.1.9-1.5 3-1.5s3 .9 3 2.5c0 2-3 2.5-3 4.5 0 1.1.4 1.5 3 1.5"/></svg></div>
+          <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9"/><path d="M12 6v2m0 8v2"/><path d="M9 9.5c0-1.1.9-1.5 3-1.5s3 .9 3 2.5c0 2-3 2.5-3 4.5 0 1.1.4 1.5 3 1.5"/>
+            </svg>
+          </div>
           <p className="text-[12px] font-bold text-slate-300 mb-4">No budgets configured</p>
         </div>
       ) : (
@@ -142,7 +147,11 @@ const Dashboard = ({ transactions = [], budgets = [], onSaveTransaction }) => {
         {/* Header */}
         <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-emerald-100 p-4 lg:px-10 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-gray-600 flex items-center justify-center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-gray-600 flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </button>
             <h2 className="text-lg md:text-xl font-black text-gray-900 tracking-tight">Dashboard Overview</h2>
           </div>
           <button
@@ -160,6 +169,9 @@ const Dashboard = ({ transactions = [], budgets = [], onSaveTransaction }) => {
           </div>
         ) : (
           <div className="p-4 lg:p-8 max-w-[1600px] mx-auto space-y-8 animate-fadeIn">
+
+            {/* ✅ Tax Notification Banner */}
+            <TaxNotificationBanner transactions={transactions} />
 
             <StatCards transactions={transactions} />
 
