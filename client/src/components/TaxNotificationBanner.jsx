@@ -54,7 +54,6 @@ function getUrgency(daysLeft) {
 const TaxNotificationBanner = ({ transactions = [] }) => {
   const navigate = useNavigate();
 
-  // ✅ Sirf memory mein — refresh hone par reset ho jaayega
   const [dismissed, setDismissed] = useState([]);
 
   const totalIncome = useMemo(() =>
@@ -119,10 +118,8 @@ const TaxNotificationBanner = ({ transactions = [] }) => {
     return list.sort((a, b) => a.daysLeft - b.daysLeft);
   }, [annualTax]);
 
-  // Filter dismissed — sirf is session ke liye
   const visible = notifications.filter(n => !dismissed.includes(n.key));
 
-  // ✅ Sirf state update — localStorage nahi
   const dismiss = (key) => {
     setDismissed(prev => [...prev, key]);
   };
