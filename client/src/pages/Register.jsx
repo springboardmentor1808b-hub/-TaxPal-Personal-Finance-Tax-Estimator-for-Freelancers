@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import {Eye,EyeOff} from "lucide-react";
+=======
+import BASE_URL from "../config";
+>>>>>>> bb7f20e7b0fbee79cdc0947817151f4a1087a74b
 
 const COUNTRIES = [
   { value: "india", label: "🇮🇳 India",         currency: "₹" },
@@ -58,7 +62,7 @@ const Register = () => {
     const currency = selected ? selected.currency : "₹";
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
+      const response = await fetch(`${BASE_URL}/api/auth/register`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -88,8 +92,8 @@ const Register = () => {
   const dynamicCurrency = selectedCountry ? selectedCountry.currency : "₹";
 
   const getInputClass = (fieldName) => {
-    const base       = "w-full px-5 py-4 bg-gray-50 border rounded-2xl outline-none transition-all duration-300";
-    const errorState = "border-red-500 focus:ring-4 focus:ring-red-100";
+    const base        = "w-full px-5 py-4 bg-gray-50 border rounded-2xl outline-none transition-all duration-300";
+    const errorState  = "border-red-500 focus:ring-4 focus:ring-red-100";
     const normalState = "border-gray-100 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100";
     return `${base} ${errors[fieldName] ? errorState : normalState}`;
   };
@@ -114,7 +118,6 @@ const Register = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
 
-            {/* Full Name */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
                 Full Name <span className="text-red-500">*</span>
@@ -127,7 +130,6 @@ const Register = () => {
               {errors.fullName && <p className="text-xs text-red-600 mt-1.5 font-medium ml-1">⚠️ {errors.fullName}</p>}
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
                 Email Address <span className="text-red-500">*</span>
@@ -174,10 +176,7 @@ const Register = () => {
 </div>
 
 
-            {/* Country + Income */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-              {/* Country — Dropdown */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
                   Country <span className="text-red-500">*</span>
@@ -195,7 +194,6 @@ const Register = () => {
                 {errors.country && <p className="text-xs text-red-600 mt-1.5 font-medium ml-1">⚠️ {errors.country}</p>}
               </div>
 
-              {/* Income */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
                   Annual Income ({dynamicCurrency}) <span className="text-red-500">*</span>

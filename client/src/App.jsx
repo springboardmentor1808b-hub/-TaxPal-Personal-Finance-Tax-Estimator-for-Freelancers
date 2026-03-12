@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
+import BASE_URL from "./config";
 
 // Pages
 import Landing        from "./pages/Landing";
@@ -21,8 +22,8 @@ import TransactionsPage   from "./components/TransactionsPage";
 import TransactionModal   from "./components/TransactionModal";
 import TaxCalendar        from "./components/TaxCalendar";
 
-const API_URL    = "http://localhost:5000/api/transactions";
-const BUDGET_URL = "http://localhost:5000/api/budgets";
+const API_URL    = `${BASE_URL}/api/transactions`;
+const BUDGET_URL = `${BASE_URL}/api/budgets`;
 
 function App() {
   const [transactions,       setTransactions]       = useState([]);
@@ -30,11 +31,22 @@ function App() {
   const [isModalOpen,        setIsModalOpen]        = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
 
-  const token = localStorage.getItem("token");
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
+
+  const handleLoginSuccess = (newToken) => {
+    setToken(newToken);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    setTransactions([]);
+    setBudgets([]);
+  };
 
   // Fetch transactions
   useEffect(() => {
-    if (!token) return;
+    if (!token) { setTransactions([]); return; }
     axios.get(`${API_URL}/all`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setTransactions(res.data))
       .catch(err => console.error("Fetch transactions error:", err));
@@ -42,15 +54,12 @@ function App() {
 
   // Fetch budgets
   useEffect(() => {
-    if (!token) return;
+    if (!token) { setBudgets([]); return; }
     axios.get(`${BUDGET_URL}/all`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setBudgets(res.data))
       .catch(err => console.error("Fetch budgets error:", err));
   }, [token]);
 
-  // Save / Update transaction
-  // calledFromPage=true  → TransactionsPage has its own modal, don't call closeModal()
-  // calledFromPage=false → global modal, call closeModal()
   const handleSaveTransaction = async (data, calledFromPage = false) => {
     try {
       const transactionId = data._id;
@@ -74,7 +83,6 @@ function App() {
     }
   };
 
-  // Delete transaction
   const handleDelete = async (id) => {
     if (!id) return;
     if (!window.confirm("Are you sure?")) return;
@@ -95,19 +103,18 @@ function App() {
     <div className="app-container">
       <BrowserRouter>
         <Routes>
-          {/* Public */}
           <Route path="/"                element={<Landing />} />
-          <Route path="/login"           element={<Login />} />
+          <Route path="/login"           element={<Login onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/register"        element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password"  element={<ResetPassword />} />
 
-          {/* App */}
           <Route path="/dashboard" element={
             <Dashboard
               transactions={transactions}
               budgets={budgets}
               onSaveTransaction={(data) => handleSaveTransaction(data, false)}
+              onLogout={handleLogout}
             />
           } />
 
@@ -117,23 +124,24 @@ function App() {
               budgets={budgets}
               onDelete={handleDelete}
               onSaveTransaction={(data) => handleSaveTransaction(data, true)}
+              onLogout={handleLogout}
             />
           } />
 
-          <Route path="/tax-estimator" element={<TaxEstimatorPage transactions={transactions} />} />
-          <Route path="/reports" element={<Reports transactions={transactions} budgets={budgets} onOpenModal={openAddModal} />} />
-          <Route path="/settings"  element={<Settings />} />
-          <Route path="/calendar"  element={<TaxCalendar transactions={transactions} />} />
-          <Route path="/budget" element={
+          <Route path="/tax-estimator" element={<TaxEstimatorPage transactions={transactions} onLogout={handleLogout} />} />
+          <Route path="/reports"       element={<Reports transactions={transactions} budgets={budgets} onOpenModal={openAddModal} onLogout={handleLogout} />} />
+          <Route path="/settings"      element={<Settings onLogout={handleLogout} />} />
+          <Route path="/calendar"      element={<TaxCalendar transactions={transactions} onLogout={handleLogout} />} />
+          <Route path="/budget"        element={
             <BudgetPage
               transactions={transactions}
               budgets={budgets}
               setBudgets={setBudgets}
+              onLogout={handleLogout}
             />
           } />
         </Routes>
 
-        {/* Global modal — for Dashboard / Reports "Add Record" button */}
         <TransactionModal
           isOpen={isModalOpen}
           onClose={closeModal}

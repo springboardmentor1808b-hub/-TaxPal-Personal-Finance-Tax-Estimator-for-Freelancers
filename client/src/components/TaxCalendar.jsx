@@ -89,7 +89,6 @@ const TaxCalendar = ({ transactions = [] }) => {
     [totalIncome, regime]
   );
 
-  // Use saved estimate if available and income matches closely, else fallback to calculated
   const annualTax = useMemo(() => {
     if (savedEstimate?.totalTax && Math.abs(savedEstimate.grossIncome - totalIncome) < 1000) {
       return savedEstimate.totalTax;

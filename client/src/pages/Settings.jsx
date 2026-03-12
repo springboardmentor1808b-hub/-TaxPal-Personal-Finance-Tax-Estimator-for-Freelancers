@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import BASE_URL from "../config";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -23,7 +24,6 @@ const Settings = () => {
     navigate("/login");
   };
 
-  // ── Save profile name via API ──────────────────────────────
   const handleSaveProfile = async () => {
     if (!formData.name.trim()) {
       setSaveError("Name cannot be empty.");
@@ -35,7 +35,7 @@ const Settings = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/auth/update-profile", {
+      const res = await fetch(`${BASE_URL}/api/auth/update-profile`, {
         method:  "PUT",
         headers: {
           "Content-Type":  "application/json",
@@ -66,7 +66,6 @@ const Settings = () => {
       <div className="max-w-[1100px] mx-auto py-6 md:py-16 px-4 md:px-8">
         <div className="flex flex-col lg:flex-row gap-10">
 
-          {/* ── Settings Sidebar ───────────────────────────────── */}
           <aside className={`w-full lg:w-64 space-y-8 flex-shrink-0 ${!isMobileMenu ? 'hidden lg:block' : 'block'}`}>
             <div className="px-2 cursor-pointer" onClick={() => setActiveTab("menu")}>
               <h1 className="text-3xl font-black tracking-tighter italic text-gray-900">
@@ -109,7 +108,6 @@ const Settings = () => {
             </button>
           </aside>
 
-          {/* ── Main Content ───────────────────────────────────── */}
           <div className={`flex-1 ${isMobileMenu ? 'hidden lg:block' : 'block'}`}>
             {!isMobileMenu && (
               <button
@@ -123,7 +121,6 @@ const Settings = () => {
 
             <main className="bg-white rounded-[2.5rem] p-6 md:p-12 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] border border-white min-h-[550px] flex flex-col relative overflow-hidden">
 
-              {/* Welcome */}
               {activeTab === "menu" && (
                 <div className="flex-1 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-700 group/welcome">
                   <div className="relative mb-8 transition-transform duration-500 group-hover/welcome:-translate-y-2">
@@ -151,7 +148,6 @@ const Settings = () => {
                 </div>
               )}
 
-              {/* Profile */}
               {activeTab === "general" && (
                 <div className="animate-in slide-in-from-right-4 duration-500">
                   <header className="mb-10">
@@ -160,8 +156,6 @@ const Settings = () => {
                     </h2>
                   </header>
                   <div className="max-w-md space-y-8">
-
-                    {/* Name */}
                     <div className="space-y-2 group">
                       <label className="text-[11px] font-black uppercase text-gray-400 ml-1 group-focus-within:text-emerald-500 transition-colors">
                         Legal Name
@@ -180,7 +174,6 @@ const Settings = () => {
                       />
                     </div>
 
-                    {/* Email — read only */}
                     <div className="space-y-2 relative group/email">
                       <label className="text-[11px] font-black uppercase text-gray-400 ml-1">Email Address</label>
                       <div className="absolute -top-4 right-0 bg-gray-900 text-white text-[10px] px-3 py-1.5 rounded-lg
@@ -201,21 +194,13 @@ const Settings = () => {
                       </div>
                     </div>
 
-                    {/* Feedback */}
-                    {saveError && (
-                      <p className="text-sm text-red-600 font-bold">⚠️ {saveError}</p>
-                    )}
-                    {saveSuccess && (
-                      <p className="text-sm text-emerald-600 font-bold">✅ Profile updated successfully!</p>
-                    )}
+                    {saveError   && <p className="text-sm text-red-600 font-bold">⚠️ {saveError}</p>}
+                    {saveSuccess && <p className="text-sm text-emerald-600 font-bold">✅ Profile updated successfully!</p>}
 
                     <button
-                      onClick={handleSaveProfile}
-                      disabled={isSaving}
+                      onClick={handleSaveProfile} disabled={isSaving}
                       className={`w-full md:w-auto px-12 py-4 rounded-2xl font-black text-sm text-white transition-all active:scale-95 ${
-                        isSaving
-                          ? "bg-emerald-300 cursor-not-allowed"
-                          : "bg-emerald-500 hover:bg-emerald-600 hover:shadow-[0_15px_30px_-10px_rgba(16,185,129,0.4)]"
+                        isSaving ? "bg-emerald-300 cursor-not-allowed" : "bg-emerald-500 hover:bg-emerald-600 hover:shadow-[0_15px_30px_-10px_rgba(16,185,129,0.4)]"
                       }`}
                     >
                       {isSaving ? "Syncing..." : "Save Changes"}
@@ -224,7 +209,6 @@ const Settings = () => {
                 </div>
               )}
 
-              {/* Preferences */}
               {activeTab === "preferences" && (
                 <div className="animate-in slide-in-from-right-4 duration-500">
                   <h2 className="text-2xl font-black mb-10 tracking-tight">System Prefs</h2>
@@ -254,21 +238,14 @@ const Settings = () => {
                         </span>
                         <span className="text-[11px] text-gray-400 font-medium">AI-driven alerts.</span>
                       </div>
-                      <button
-                        className={`w-14 h-8 rounded-full transition-all flex items-center px-1.5 ${
-                          formData.notifications ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-gray-300'
-                        }`}
-                      >
-                        <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-all duration-300 ${
-                          formData.notifications ? 'translate-x-6' : 'translate-x-0'
-                        }`} />
+                      <button className={`w-14 h-8 rounded-full transition-all flex items-center px-1.5 ${formData.notifications ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-gray-300'}`}>
+                        <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-all duration-300 ${formData.notifications ? 'translate-x-6' : 'translate-x-0'}`} />
                       </button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Security */}
               {activeTab === "security" && (
                 <div className="animate-in slide-in-from-right-4 duration-500">
                   <h2 className="text-2xl font-black mb-8 text-rose-600 tracking-tight">Advanced Security</h2>
@@ -292,13 +269,10 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* ── Modals ─────────────────────────────────────────────── */}
       {(showLogoutModal || showDeleteModal) && (
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-xl z-[100] flex items-center justify-center p-4 animate-in fade-in duration-500">
           <div className="bg-white w-full max-w-sm p-12 rounded-[3.5rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] text-center border border-white">
-            <div className={`w-20 h-20 mx-auto mb-8 rounded-[2rem] flex items-center justify-center text-3xl shadow-inner ${
-              showLogoutModal ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'
-            }`}>
+            <div className={`w-20 h-20 mx-auto mb-8 rounded-[2rem] flex items-center justify-center text-3xl shadow-inner ${showLogoutModal ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
               {showLogoutModal ? '🚪' : '⚠️'}
             </div>
             <h3 className="text-2xl font-black text-gray-900 tracking-tight">
@@ -313,11 +287,7 @@ const Settings = () => {
             <div className="flex flex-col gap-3">
               <button
                 onClick={showLogoutModal ? handleLogout : () => { setShowDeleteModal(false); navigate("/register"); }}
-                className={`py-5 rounded-2xl font-black text-white transition-all shadow-xl active:scale-95 ${
-                  showLogoutModal
-                    ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100'
-                    : 'bg-rose-600 hover:bg-rose-700 shadow-rose-100'
-                }`}
+                className={`py-5 rounded-2xl font-black text-white transition-all shadow-xl active:scale-95 ${showLogoutModal ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100' : 'bg-rose-600 hover:bg-rose-700 shadow-rose-100'}`}
               >
                 {showLogoutModal ? "Sign Out Now" : "Yes, Erase All"}
               </button>

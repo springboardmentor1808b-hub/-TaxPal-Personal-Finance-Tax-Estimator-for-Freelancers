@@ -6,13 +6,13 @@ const TransactionList = ({ transactions = [], loading }) => {
   // Complete category map — matches TransactionModal categories
   const getCategoryDetails = (category, type) => {
     const map = {
-      // ── Income ──────────────────────────────────────────
+      // ── Income
       "Salary":      { icon: "💰", bg: "bg-emerald-50/60",  text: "text-emerald-600" },
       "Freelance":   { icon: "💻", bg: "bg-blue-50/60",     text: "text-blue-600"    },
       "Investment":  { icon: "📈", bg: "bg-violet-50/60",   text: "text-violet-600"  },
       "Gift":        { icon: "🎁", bg: "bg-pink-50/60",     text: "text-pink-600"    },
 
-      // ── Expense ─────────────────────────────────────────
+      // ── Expense
       "Food":           { icon: "🍕", bg: "bg-rose-50/60",    text: "text-rose-600"    },
       "Rent & Bills":   { icon: "🏠", bg: "bg-orange-50/60",  text: "text-orange-600"  },
       "Shopping":       { icon: "🛍️", bg: "bg-purple-50/60",  text: "text-purple-600"  },
