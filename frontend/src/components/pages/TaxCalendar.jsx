@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -12,12 +12,53 @@ import {
 } from "lucide-react";
 
 const TaxCalendar = () => {
+
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+
+  const [events,setEvents] = useState([]);
+
+  useEffect(()=>{
+
+    const currentYear = new Date().getFullYear();
+
+    const generatedEvents = [
+
+      {
+        title:"Q1 Estimated Tax Payment",
+        date:`15 June ${currentYear}`,
+        description:"First quarter advance tax payment due."
+      },
+
+      {
+        title:"Q2 Estimated Tax Payment",
+        date:`15 September ${currentYear}`,
+        description:"Second quarter advance tax payment due."
+      },
+
+      {
+        title:"Q3 Estimated Tax Payment",
+        date:`15 December ${currentYear}`,
+        description:"Third quarter advance tax payment due."
+      },
+
+      {
+        title:"Q4 Estimated Tax Payment",
+        date:`15 March ${currentYear+1}`,
+        description:"Final advance tax payment due."
+      }
+
+    ];
+
+    setEvents(generatedEvents);
+
+  },[]);
+
   return (
+
     <div className="flex min-h-screen bg-[#fdfaf5]">
 
-      {/* SIDEBAR (SAME STRUCTURE) */}
+      {/* SIDEBAR */}
       <aside className="w-64 bg-[#1a1a1a] flex flex-col fixed h-full">
 
         <div className="p-8">
@@ -43,7 +84,8 @@ const TaxCalendar = () => {
           <NavItem icon={<CalendarDays size={20}/>} label="Tax Calendar"
             active />
 
-          <NavItem icon={<BarChart3 size={20}/>} label="Reports" />
+          <NavItem icon={<BarChart3 size={20}/>} label="Reports"
+            onClick={()=>navigate("/reports")} />
 
           <NavItem icon={<User size={20}/>} label="Profile"
             onClick={() => navigate("/profile")} />
@@ -51,31 +93,35 @@ const TaxCalendar = () => {
         </nav>
 
         <div className="p-3 border-t border-white/10">
-        <div className="flex items-center gap-2 mb-3 text-white">
+
+          <div className="flex items-center gap-2 mb-3 text-white">
+
             <div className="w-8 h-8 bg-[#ff4d00] rounded-full flex items-center justify-center text-sm font-semibold">
-            {user?.firstName?.charAt(0)}
-            {user?.lastName?.charAt(0)}
+              {user?.firstName?.charAt(0)}
+              {user?.lastName?.charAt(0)}
             </div>
 
             <div className="min-w-0">
-            <p className="text-xs font-medium truncate">
+              <p className="text-xs font-medium truncate">
                 {user?.firstName} {user?.lastName}
-            </p>
-            <p className="text-[11px] text-gray-400 truncate">
+              </p>
+              <p className="text-[11px] text-gray-400 truncate">
                 {user?.email}
-            </p>
+              </p>
             </div>
-        </div>
 
-        <button
+          </div>
+
+          <button
             onClick={() => {
-            localStorage.clear();
-            navigate("/login");
+              localStorage.clear();
+              navigate("/login");
             }}
             className="flex items-center gap-2 text-xs text-gray-400 hover:text-[#ff4d00] transition-colors"
-        >
-            <LogOut size={14} /> Logout
-        </button>
+          >
+            <LogOut size={14}/> Logout
+          </button>
+
         </div>
 
       </aside>
@@ -89,37 +135,40 @@ const TaxCalendar = () => {
 
         <div className="bg-white p-8 rounded-3xl shadow space-y-6">
 
-          <h2 className="text-lg font-bold">June 2025</h2>
+          {events.map((event,index)=>(
 
-          <div className="border p-4 rounded-xl">
-            <h3 className="font-semibold">Reminder: Q2 Estimated Tax Payment</h3>
-            <p className="text-gray-500 text-sm">June 1, 2025</p>
-            <p className="text-gray-600 text-sm">
-              Reminder for upcoming Q2 estimated tax payment.
-            </p>
-          </div>
+            <div key={index} className="border p-4 rounded-xl">
 
-          <div className="border p-4 rounded-xl">
-            <h3 className="font-semibold">Q2 Estimated Tax Payment</h3>
-            <p className="text-gray-500 text-sm">June 15, 2025</p>
-            <p className="text-gray-600 text-sm">
-              Second quarter estimated tax payment due.
-            </p>
-          </div>
+              <h3 className="font-semibold">
+                {event.title}
+              </h3>
+
+              <p className="text-gray-500 text-sm">
+                {event.date}
+              </p>
+
+              <p className="text-gray-600 text-sm">
+                {event.description}
+              </p>
+
+            </div>
+
+          ))}
 
         </div>
 
       </main>
+
     </div>
+
   );
+
 };
 
-const NavItem = ({ icon, label, active = false, onClick, closeSidebar }) => (
+const NavItem = ({ icon, label, active = false, onClick }) => (
+
   <div
-    onClick={() => {
-      if (onClick) onClick();
-      if (closeSidebar) closeSidebar();
-    }}
+    onClick={onClick}
     className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${
       active
         ? "bg-[#ff4d00] text-white"
@@ -129,6 +178,7 @@ const NavItem = ({ icon, label, active = false, onClick, closeSidebar }) => (
     {icon}
     <span className="text-sm">{label}</span>
   </div>
+
 );
 
 export default TaxCalendar;

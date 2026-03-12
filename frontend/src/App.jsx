@@ -15,7 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./components/pages/Profile";
 import TaxEstimator from "./components/pages/TaxEstimator";
 import TaxCalendar from "./components/pages/TaxCalendar";
-
+import Reports from "./components/pages/Reports";
 function App() {
   const isAuthenticated = localStorage.getItem("token");
 
@@ -43,6 +43,15 @@ function App() {
           element={
             <ProtectedRoute>
               <TransactionPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <Reports />
             </ProtectedRoute>
           }
         />
