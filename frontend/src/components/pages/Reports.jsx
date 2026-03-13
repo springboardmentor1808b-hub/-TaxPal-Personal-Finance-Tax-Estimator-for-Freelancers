@@ -102,14 +102,28 @@ const Reports = () => {
         estTax: tax
       });
 
-      const quarters = [
-        { name: "Q1", income: income * 0.25, expense: expense * 0.2 },
-        { name: "Q2", income: income * 0.35, expense: expense * 0.25 },
-        { name: "Q3", income: income * 0.2, expense: expense * 0.3 },
-        { name: "Q4", income: income * 0.2, expense: expense * 0.25 }
-      ];
-
-      setChartData(quarters);
+      // --- LOGIC ADDED HERE ---
+      if (activeTab === "Tax Report") {
+        // Jab Tax Report active ho toh Quarterly dikhao
+        const quarters = [
+          { name: "Q1", income: income * 0.25, expense: expense * 0.2, tax: tax * 0.2 },
+          { name: "Q2", income: income * 0.35, expense: expense * 0.25, tax: tax * 0.3 },
+          { name: "Q3", income: income * 0.2, expense: expense * 0.3, tax: tax * 0.25 },
+          { name: "Q4", income: income * 0.2, expense: expense * 0.25, tax: tax * 0.25 }
+        ];
+        setChartData(quarters);
+      } else {
+        // Jab Income ya Expense active ho toh Monthly dikhao
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthlyData = months.map((month, index) => ({
+          name: month,
+          income: (income / 12) * (0.7 + Math.random() * 0.6), // Mock distribution based on total
+          expense: (expense / 12) * (0.8 + Math.random() * 0.4),
+          tax: tax / 12
+        }));
+        setChartData(monthlyData);
+      }
+      // ------------------------
 
     } catch (error) {
 
@@ -122,7 +136,7 @@ const Reports = () => {
 
     fetchReports();
 
-  }, [filter.year]);
+  }, [filter.year, activeTab]); // activeTab ko dependency mein dala taaki click karte hi data change ho
 
   const getChartConfig = () => {
 
@@ -291,21 +305,22 @@ const Reports = () => {
 
                 <BarChart data={chartData}>
 
-                  <CartesianGrid strokeDasharray="3 3"/>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false}/>
 
-                  <XAxis dataKey="name"/>
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
 
-                  <YAxis/>
+                  <YAxis axisLine={false} tickLine={false} />
 
-                  <Tooltip/>
+                  <Tooltip cursor={{fill: 'transparent'}}/>
 
                   <Bar
                     dataKey={config.key}
                     fill={config.color}
                     radius={[10,10,0,0]}
+                    barSize={activeTab === "Tax Report" ? 60 : 25} // Monthly mein bar patla rakha hai taki 12 bars fit ho jayein
                   >
                     {chartData.map((entry,index)=>(
-                      <Cell key={index} fillOpacity={1-index*0.15}/>
+                      <Cell key={index} fillOpacity={1-index*0.03}/>
                     ))}
                   </Bar>
 
@@ -345,7 +360,7 @@ const Reports = () => {
 
           <h3 className="font-bold mb-6 flex items-center gap-2">
             <TrendingUp size={18} className="text-green-600"/>
-            Income vs Expense Trend
+            Income vs Expense Trend (Monthly)
           </h3>
 
           <div className="h-[250px]">
@@ -354,9 +369,9 @@ const Reports = () => {
 
               <AreaChart data={chartData}>
 
-                <CartesianGrid strokeDasharray="3 3"/>
+                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
 
-                <XAxis dataKey="name"/>
+                <XAxis dataKey="name" axisLine={false} tickLine={false}/>
 
                 <Tooltip/>
 
@@ -365,6 +380,7 @@ const Reports = () => {
                   dataKey="income"
                   stroke="#f97316"
                   fill="#fed7aa"
+                  fillOpacity={0.4}
                 />
 
                 <Area
@@ -372,6 +388,7 @@ const Reports = () => {
                   dataKey="expense"
                   stroke="#ef4444"
                   fill="#fecaca"
+                  fillOpacity={0.4}
                 />
 
               </AreaChart>
