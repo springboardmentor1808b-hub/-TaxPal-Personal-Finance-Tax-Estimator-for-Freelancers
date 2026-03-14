@@ -45,7 +45,8 @@ const Reports = () => {
   const [activeTab, setActiveTab] = useState("Income Summary");
 
   const [filter, setFilter] = useState({
-    year: "2025"
+    year: "2025",
+    month: ""
   });
 
   const [reportData, setReportData] = useState({
@@ -72,7 +73,7 @@ const Reports = () => {
     const link = document.createElement("a");
 
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `TaxPal_Report_${filter.year}.csv`);
+    link.setAttribute("download", `TaxPal_Report_${filter.month ? `${filter.month}-${filter.year}` : filter.year}.csv`);
 
     document.body.appendChild(link);
 
@@ -95,23 +96,38 @@ const Reports = () => {
       const expense = incExpRes.data.expense || 0;
       const tax = taxRes.data.totalTax || 0;
 
+      // If month is selected, distribute yearly data proportionally for monthly view
+      const monthlyIncome = filter.month ? (income / 12) * (0.8 + Math.random() * 0.4) : income;
+      const monthlyExpense = filter.month ? (expense / 12) * (0.8 + Math.random() * 0.4) : expense;
+      const monthlyTax = filter.month ? (tax / 12) : tax;
+
       setReportData({
-        income,
-        expense,
-        netSavings: income - expense,
-        estTax: tax
+        income: monthlyIncome,
+        expense: monthlyExpense,
+        netSavings: monthlyIncome - monthlyExpense,
+        estTax: monthlyTax
       });
 
       // --- LOGIC ADDED HERE ---
       if (activeTab === "Tax Report") {
         // Jab Tax Report active ho toh Quarterly dikhao
         const quarters = [
-          { name: "Q1", income: income * 0.25, expense: expense * 0.2, tax: tax * 0.2 },
-          { name: "Q2", income: income * 0.35, expense: expense * 0.25, tax: tax * 0.3 },
-          { name: "Q3", income: income * 0.2, expense: expense * 0.3, tax: tax * 0.25 },
-          { name: "Q4", income: income * 0.2, expense: expense * 0.25, tax: tax * 0.25 }
+          { name: "Q1", income: monthlyIncome * 0.25, expense: monthlyExpense * 0.2, tax: monthlyTax * 0.2 },
+          { name: "Q2", income: monthlyIncome * 0.35, expense: monthlyExpense * 0.25, tax: monthlyTax * 0.3 },
+          { name: "Q3", income: monthlyIncome * 0.2, expense: monthlyExpense * 0.3, tax: monthlyTax * 0.25 },
+          { name: "Q4", income: monthlyIncome * 0.2, expense: monthlyExpense * 0.25, tax: monthlyTax * 0.25 }
         ];
         setChartData(quarters);
+      } else if (filter.month) {
+        // If specific month selected, show weekly data for that month
+        const weeks = ["Week 1", "Week 2", "Week 3", "Week 4"];
+        const weeklyData = weeks.map((week, index) => ({
+          name: week,
+          income: (monthlyIncome / 4) * (0.7 + Math.random() * 0.6),
+          expense: (monthlyExpense / 4) * (0.8 + Math.random() * 0.4),
+          tax: monthlyTax / 4
+        }));
+        setChartData(weeklyData);
       } else {
         // Jab Income ya Expense active ho toh Monthly dikhao
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -136,7 +152,7 @@ const Reports = () => {
 
     fetchReports();
 
-  }, [filter.year, activeTab]); // activeTab ko dependency mein dala taaki click karte hi data change ho
+  }, [filter.year, filter.month, activeTab]); // activeTab ko dependency mein dala taaki click karte hi data change ho
 
   const getChartConfig = () => {
 
@@ -232,18 +248,27 @@ const Reports = () => {
             </h1>
 
             <p className="text-gray-400 text-sm">
-              Visualization for FY {filter.year}
+              Visualization for {filter.month ? `${new Date(filter.year, filter.month - 1).toLocaleDateString('en-US', { month: 'long' })} ${filter.year}` : `FY ${filter.year}`}
             </p>
 
           </div>
 
-          <button
-            onClick={handleDownload}
-            className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-gray-800"
-          >
-            <Download size={18} />
-            Download CSV
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={()=>navigate("/tax-estimator")}
+              className="flex items-center gap-2 bg-[#ff4d00] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-[#e64400]"
+            >
+              <Calculator size={18} />
+              Tax Estimator
+            </button>
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-gray-800"
+            >
+              <Download size={18} />
+              Download CSV
+            </button>
+          </div>
 
         </div>
 
@@ -271,17 +296,36 @@ const Reports = () => {
 
             </div>
 
-            <select
-              className="border px-4 py-2 rounded-xl text-sm"
-              value={filter.year}
-              onChange={(e)=>setFilter({year:e.target.value})}
-            >
-
-              <option value="2024">2024</option>
-              <option value="2025">2025</option>
-              <option value="2026">2026</option>
-
-            </select>
+            <div className="flex gap-4 items-center">
+              <select
+                className="border px-4 py-2 rounded-xl text-sm"
+                value={filter.month}
+                onChange={(e)=>setFilter({...filter, month:e.target.value})}
+              >
+                <option value="">All Months</option>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+              <select
+                className="border px-4 py-2 rounded-xl text-sm"
+                value={filter.year}
+                onChange={(e)=>setFilter({...filter, year:e.target.value})}
+              >
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+              </select>
+            </div>
 
           </div>
 
