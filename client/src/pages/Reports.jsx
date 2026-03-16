@@ -10,7 +10,7 @@ import autoTable from "jspdf-autotable";
 
 
 
-const API = "BASE_URL";
+const API = BASE_URL;
 
 const CAT_COLORS = [
   "#10b981","#3b82f6","#f59e0b","#8b5cf6",
