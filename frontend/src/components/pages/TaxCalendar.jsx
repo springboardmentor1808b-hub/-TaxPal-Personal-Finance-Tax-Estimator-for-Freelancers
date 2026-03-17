@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API from "../../api";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -18,41 +19,45 @@ const TaxCalendar = () => {
 
   const [events,setEvents] = useState([]);
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    const currentYear = new Date().getFullYear();
+  const fetchReminders = async () => {
 
-    const generatedEvents = [
+    try {
 
-      {
-        title:"Q1 Estimated Tax Payment",
-        date:`15 June ${currentYear}`,
-        description:"First quarter advance tax payment due."
-      },
+      const financialYear = "2025-26";
+      const res = await API.get(
+        `/tax/reminders?financialYear=${financialYear}`
+      );
 
-      {
-        title:"Q2 Estimated Tax Payment",
-        date:`15 September ${currentYear}`,
-        description:"Second quarter advance tax payment due."
-      },
+      if (res.data.success) {
 
-      {
-        title:"Q3 Estimated Tax Payment",
-        date:`15 December ${currentYear}`,
-        description:"Third quarter advance tax payment due."
-      },
+        const formattedEvents = res.data.reminders.map((r) => ({
 
-      {
-        title:"Q4 Estimated Tax Payment",
-        date:`15 March ${currentYear+1}`,
-        description:"Final advance tax payment due."
+          title: `${r.quarter} Estimated Tax Payment`,
+
+          date: new Date(r.dueDate).toDateString(),
+
+          description:
+            `Remaining: ₹${r.totalPayableToday.toFixed(2)} (${r.status})`
+
+        }));
+
+        setEvents(formattedEvents);
+
       }
 
-    ];
+    } catch (error) {
 
-    setEvents(generatedEvents);
+      console.error("Failed to fetch tax reminders", error);
 
-  },[]);
+    }
+
+  };
+
+  fetchReminders();
+
+}, []);
 
   return (
 
