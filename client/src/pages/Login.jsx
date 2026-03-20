@@ -153,7 +153,7 @@ const Login = ({ onLoginSuccess }) => {
       type={showPassword ? "text" : "password"}
       name="password"
       required
-      className="w-full px-5 py-4 pr-12 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none transition-all duration-300"
+      className={`${getInputClass("password")} pr-12`}
       placeholder="••••••••"
       onChange={handleChange}
     />
