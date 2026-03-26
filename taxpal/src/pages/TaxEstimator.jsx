@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
+import { useTransactions } from "../context/TransactionContext";
+import { api } from "../utils/api";
 
 const inputCls =
   "w-full bg-purple-50 border border-purple-100 rounded-xl px-4 py-2.5 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all placeholder-gray-300";
@@ -33,6 +35,20 @@ function daysUntil(date) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   return Math.ceil((date - now) / (1000 * 60 * 60 * 24));
+}
+
+function getTaxPaymentsByQuarter(transactions, targetYear) {
+  const base = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
+  transactions
+    .filter((t) => t.category === 'Tax Payment')
+    .filter((t) => new Date(t.date).getFullYear() === Number(targetYear))
+    .forEach((tx) => {
+      const match = String(tx.description || '').match(/Q[1-4]/i);
+      if (match && base[match[0].toUpperCase()] !== undefined) {
+        base[match[0].toUpperCase()] += Number(tx.amount || 0);
+      }
+    });
+  return base;
 }
 
 /* ── Core tax math ──────────────────────────────────────────────────── */
@@ -273,6 +289,8 @@ function QuarterCard({ q, year, currency, fmt, onPay }) {
    MAIN PAGE
 ══════════════════════════════════════════════════════════════════════ */
 export default function TaxEstimator() {
+  const { transactions, addTransaction } = useTransactions();
+  const [taxHistory, setTaxHistory] = useState([]);
   const [form, setForm] = useState({
     country:          "usa",
     state:            "",
@@ -300,7 +318,7 @@ export default function TaxEstimator() {
   };
 
   /* ── Recalculate & build quarters ── */
-  const calculateTax = (e) => {
+  const calculateTax = async (e) => {
     e.preventDefault();
 
     const income     = Number(form.grossIncome       || 0);
@@ -316,15 +334,19 @@ export default function TaxEstimator() {
 
     // If already calculated, preserve payments but rebuild amounts
     const prevQuarters = quarters || [];
+    const paidByQuarter = getTaxPaymentsByQuarter(transactions, form.year);
+
     const newQuarters = qKeys.map((key, i) => {
       const prev = prevQuarters.find((q) => q.key === key);
+      const persistedPaid = paidByQuarter[key] || 0;
+      const totalPaid = Math.max(prev?.totalPaid || 0, persistedPaid);
       return {
         key,
         label:      QUARTER_DEADLINES[key].label,
         baseAmount: perQ,
         carryIn:    0,       // will be filled in next pass
         totalDue:   perQ,   // will be filled in next pass
-        totalPaid:  prev?.totalPaid || 0,
+        totalPaid,
         remaining:  0,       // computed below
         fullyPaid:  false,
         prevKey:    i > 0 ? qKeys[i - 1] : null,
@@ -347,26 +369,32 @@ export default function TaxEstimator() {
 
     // Save to backend
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      fetch("http://localhost:5000/api/taxes/save", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json", "x-auth-token": token },
+      await api("/api/taxes/save", {
+        method: "POST",
         body: JSON.stringify({
-          country: form.country, state: form.state,
-          filingStatus: form.filingStatus, year: form.year,
-          grossIncome: income, totalDeductions: deductions,
-          taxableIncome: taxable, estimatedTax: annualTax,
+          country: form.country,
+          state: form.state,
+          filingStatus: form.filingStatus,
+          year: Number(form.year),
+          grossIncome: income,
+          totalDeductions: deductions,
+          taxableIncome: taxable,
+          estimatedTax: annualTax,
+          paidAmount: totalPaid,
         }),
       });
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   /* ── Record a payment on a quarter ── */
-  const handlePayConfirm = (paid) => {
+  const handlePayConfirm = async (paid) => {
+    const quarterKey = payModal?.key;
+
     setQuarters((prev) => {
       const updated = prev.map((q) => {
-        if (q.key !== payModal.key) return q;
+        if (q.key !== quarterKey) return q;
         const newPaid = q.totalPaid + paid;
         return { ...q, totalPaid: newPaid };
       });
@@ -382,6 +410,37 @@ export default function TaxEstimator() {
       }
       return [...updated];
     });
+
+    // Persist tax payment as a transaction (reports + budgets can use this)
+    try {
+      await addTransaction({
+        type: "expense",
+        amount: paid,
+        category: "Tax Payment",
+        description: `Tax estimate ${quarterKey} payment`,
+        date: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error("Failed to save tax payment transaction:", err);
+    }
+
+    // Also save a small tax payment record to tax API for reconciliation
+    try {
+      await api("/api/taxes/payment", {
+        method: "POST",
+        body: JSON.stringify({
+          quarter: quarterKey,
+          amount: paid,
+          year: Number(form.year),
+          country: form.country,
+          state: form.state,
+          filingStatus: form.filingStatus,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to save tax payment record: ", err);
+    }
+
     setPayModal(null);
   };
 
@@ -389,6 +448,22 @@ export default function TaxEstimator() {
   const totalTax    = quarters ? quarters.reduce((s, q) => s + q.baseAmount, 0) : 0;
   const totalPaid   = quarters ? quarters.reduce((s, q) => s + q.totalPaid,  0) : 0;
   const totalRemain = quarters ? quarters.reduce((s, q) => s + Math.max(q.remaining, 0), 0) : 0;
+
+  // Load historical saved tax estimates
+  useEffect(() => {
+    const fetchTaxHistory = async () => {
+      try {
+        const res = await api('/api/taxes');
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.data)) {
+          setTaxHistory(data.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tax estimates:', err);
+      }
+    };
+    fetchTaxHistory();
+  }, []);
 
   /* ── Alert quarters (for deadline banners) ── */
   const alertQuarters = (quarters || []).map((q) => ({
@@ -584,6 +659,38 @@ export default function TaxEstimator() {
                               {q.fullyPaid ? "✓ Done" : q.totalPaid > 0 ? "Partial" : "Unpaid"}
                             </span>
                           </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {taxHistory.length > 0 && (
+              <div className="bg-white rounded-2xl border border-purple-100 shadow-sm p-5">
+                <h2 className="text-sm font-semibold text-gray-500 mb-4 uppercase tracking-widest">
+                  Saved Tax Estimate History
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-purple-50">
+                        {["Date", "Year", "Taxable", "Estimated", "Paid"].map((h) => (
+                          <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-purple-400 uppercase tracking-widest">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {taxHistory.slice(0, 5).map((item) => (
+                        <tr key={item._id || item.id} className="border-b border-purple-50">
+                          <td className="px-4 py-2">{new Date(item.createdAt).toLocaleDateString()}</td>
+                          <td className="px-4 py-2">{item.year}</td>
+                          <td className="px-4 py-2">{fmt(item.taxableIncome)}</td>
+                          <td className="px-4 py-2">{fmt(item.estimatedTax)}</td>
+                          <td className="px-4 py-2">{fmt(item.paidAmount)}</td>
                         </tr>
                       ))}
                     </tbody>

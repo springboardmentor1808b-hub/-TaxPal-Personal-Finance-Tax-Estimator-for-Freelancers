@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import Sidebar from "../components/Sidebar";
 import { useTransactions } from "../context/TransactionContext";
+import { api } from "../utils/api";
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -185,12 +186,9 @@ export default function Reports() {
   const handleGenerate = async () => {
     setGenerated(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
       setSaving(true);
-      await fetch("http://localhost:5000/api/reports/save", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json", "x-auth-token": token },
+      await api("/api/reports/save", {
+        method: "POST",
         body: JSON.stringify({
           report_type: reportType,
           period:      `${period}-${year}${period === "quarterly" && quarter !== "all" ? `-${quarter}` : ""}`,
