@@ -7,14 +7,12 @@ const FeatureCard = ({ title, desc, icon }) => {
           {icon}
         </div>
       )}
-      
+
       <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-emerald-600 transition-colors">
         {title}
       </h3>
-      
-      <p className="text-gray-500 text-sm leading-relaxed">
-        {desc}
-      </p>
+
+      <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
     </div>
   );
 };

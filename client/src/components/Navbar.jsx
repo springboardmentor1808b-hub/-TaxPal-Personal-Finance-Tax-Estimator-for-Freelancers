@@ -10,7 +10,10 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group transition-transform hover:scale-105">
+          <Link
+            to="/"
+            className="flex items-center gap-2 group transition-transform hover:scale-105"
+          >
             <img src={logo} alt="TaxPal" className="h-9 w-auto" />
             <span className="font-bold text-xl text-gray-900 tracking-tight hidden sm:inline">
               Tax<span className="text-emerald-600">Pal</span>
@@ -19,17 +22,26 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-10">
-            <a href="#features" className="text-gray-600 hover:text-emerald-600 font-semibold transition-colors">
+            <a
+              href="#features"
+              className="text-gray-600 hover:text-emerald-600 font-semibold transition-colors"
+            >
               Features
             </a>
-            <a href="#how-it-works" className="text-gray-600 hover:text-emerald-600 font-semibold transition-colors">
+            <a
+              href="#how-it-works"
+              className="text-gray-600 hover:text-emerald-600 font-semibold transition-colors"
+            >
               How it works
             </a>
           </div>
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-6">
-            <Link to="/login" className="text-gray-600 hover:text-emerald-600 font-bold transition-colors">
+            <Link
+              to="/login"
+              className="text-gray-600 hover:text-emerald-600 font-bold transition-colors"
+            >
               Login
             </Link>
             <Link

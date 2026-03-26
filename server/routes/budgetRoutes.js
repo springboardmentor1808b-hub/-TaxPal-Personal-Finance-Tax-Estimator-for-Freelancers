@@ -1,10 +1,10 @@
-const express  = require('express');
-const router   = express.Router();
-const Budget   = require('../models/Budget');
-const protect  = require('../middleware/authMiddleware');
+const express = require("express");
+const router = express.Router();
+const Budget = require("../models/Budget");
+const protect = require("../middleware/authMiddleware");
 
-// ── GET /api/budgets/all ──────────────────────────────────
-router.get('/all', protect, async (req, res) => {
+// ------ GET /api/budgets/all ----------
+router.get("/all", protect, async (req, res) => {
   try {
     const budgets = await Budget.find({ user: req.user.id });
     res.json(budgets);
@@ -13,9 +13,9 @@ router.get('/all', protect, async (req, res) => {
   }
 });
 
-// ── POST /api/budgets/sync ────────────────────────────────
+// ----- POST /api/budgets/sync --------
 // Replaces all budgets for this user with the new array
-router.post('/sync', protect, async (req, res) => {
+router.post("/sync", protect, async (req, res) => {
   try {
     const { budgets } = req.body;
 
@@ -25,10 +25,14 @@ router.post('/sync', protect, async (req, res) => {
 
     // Validate each budget item
     for (const b of budgets) {
-      if (!b.name || typeof b.name !== 'string' || b.name.trim() === '')
-        return res.status(400).json({ message: "Each budget must have a valid name" });
+      if (!b.name || typeof b.name !== "string" || b.name.trim() === "")
+        return res
+          .status(400)
+          .json({ message: "Each budget must have a valid name" });
       if (!b.limit || isNaN(b.limit) || Number(b.limit) <= 0)
-        return res.status(400).json({ message: "Each budget must have a valid limit > 0" });
+        return res
+          .status(400)
+          .json({ message: "Each budget must have a valid limit > 0" });
     }
 
     // Delete old budgets and insert new ones
@@ -36,10 +40,10 @@ router.post('/sync', protect, async (req, res) => {
 
     let savedBudgets = [];
     if (budgets.length > 0) {
-      const toSave = budgets.map(b => ({
-        user:  req.user.id,
-        name:  b.name.trim(),
-        limit: Number(b.limit)
+      const toSave = budgets.map((b) => ({
+        user: req.user.id,
+        name: b.name.trim(),
+        limit: Number(b.limit),
       }));
       savedBudgets = await Budget.insertMany(toSave);
     }

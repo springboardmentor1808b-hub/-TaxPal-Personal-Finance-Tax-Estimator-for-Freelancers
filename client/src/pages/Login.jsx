@@ -17,9 +17,18 @@ const Login = ({ onLoginSuccess }) => {
     e.preventDefault();
     setError("");
 
-    if (!formData.email)    { setError("Please enter your email address."); return; }
-    if (!formData.password) { setError("Please enter your password."); return; }
-    if (formData.password.length < 6) { setError("Wrong password! Please enter a valid password."); return; }
+    if (!formData.email) {
+      setError("Please enter your email address.");
+      return;
+    }
+    if (!formData.password) {
+      setError("Please enter your password.");
+      return;
+    }
+    if (formData.password.length < 6) {
+      setError("Wrong password! Please enter a valid password.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -47,20 +56,29 @@ const Login = ({ onLoginSuccess }) => {
 
   const getInputClass = (fieldName) => {
     const errText = error.toLowerCase();
-    const base = "w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none transition-all duration-300 text-sm md:text-base";
+    const base =
+      "w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none transition-all duration-300 text-sm md:text-base";
     const isCredentialError = errText.includes("credentials");
-    let stateClass = "focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100";
+    let stateClass =
+      "focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100";
 
     if (error) {
       if (fieldName === "email") {
-        const isEmailError = errText.includes("email") || errText.includes("found");
-        if (isEmailError || (isCredentialError && !errText.includes("password")))
-          stateClass = "border-red-200 bg-red-50/30 focus:border-red-500 focus:ring-4 focus:ring-red-100";
+        const isEmailError =
+          errText.includes("email") || errText.includes("found");
+        if (
+          isEmailError ||
+          (isCredentialError && !errText.includes("password"))
+        )
+          stateClass =
+            "border-red-200 bg-red-50/30 focus:border-red-500 focus:ring-4 focus:ring-red-100";
       }
       if (fieldName === "password") {
-        const isPasswordError = errText.includes("password") || errText.includes("character");
+        const isPasswordError =
+          errText.includes("password") || errText.includes("character");
         if (isPasswordError || isCredentialError)
-          stateClass = "border-red-200 bg-red-50/30 focus:border-red-500 focus:ring-4 focus:ring-red-100";
+          stateClass =
+            "border-red-200 bg-red-50/30 focus:border-red-500 focus:ring-4 focus:ring-red-100";
       }
     }
     return `${base} ${stateClass}`;
@@ -71,8 +89,12 @@ const Login = ({ onLoginSuccess }) => {
       <div className="w-full max-w-sm sm:max-w-md">
         <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-emerald-100 shadow-[0_20px_50px_rgba(16,185,129,0.1)] relative overflow-hidden">
           <div className="text-center mb-8 sm:mb-10">
-            <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2 tracking-tight">Welcome Back</h2>
-            <p className="text-sm sm:text-base text-gray-500 font-medium">Login to your TaxPal account</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2 tracking-tight">
+              Welcome Back
+            </h2>
+            <p className="text-sm sm:text-base text-gray-500 font-medium">
+              Login to your TaxPal account
+            </p>
           </div>
 
           {error && (
@@ -81,13 +103,23 @@ const Login = ({ onLoginSuccess }) => {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6" noValidate>
+          <form
+            onSubmit={handleLogin}
+            className="space-y-5 sm:space-y-6"
+            noValidate
+          >
             <div>
               <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2 ml-1">
                 Email Address <span className="text-red-500">*</span>
               </label>
-              <input type="email" name="email" className={getInputClass("email")}
-                placeholder="john@example.com" value={formData.email} onChange={handleChange} />
+              <input
+                type="email"
+                name="email"
+                className={getInputClass("email")}
+                placeholder="john@example.com"
+                value={formData.email}
+                onChange={handleChange}
+              />
             </div>
 
             <div>
@@ -95,25 +127,42 @@ const Login = ({ onLoginSuccess }) => {
                 <label className="text-xs sm:text-sm font-bold text-gray-700">
                   Password <span className="text-red-500">*</span>
                 </label>
-                <Link to="/forgot-password" className="text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:underline">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:underline"
+                >
                   Forgot?
                 </Link>
               </div>
-              <input type="password" name="password" className={getInputClass("password")}
-                placeholder="••••••••" value={formData.password} onChange={handleChange} />
+              <input
+                type="password"
+                name="password"
+                className={getInputClass("password")}
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleChange}
+              />
             </div>
 
-            <button type="submit" disabled={loading}
+            <button
+              type="submit"
+              disabled={loading}
               className={`w-full py-3.5 sm:py-4 rounded-2xl text-white font-black text-base sm:text-lg shadow-lg shadow-emerald-200 transition-all active:scale-95 ${
-                loading ? "bg-emerald-300 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 hover:-translate-y-0.5"
-              }`}>
+                loading
+                  ? "bg-emerald-300 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700 hover:-translate-y-0.5"
+              }`}
+            >
               {loading ? "Signing in..." : "Login"}
             </button>
           </form>
 
           <p className="mt-6 sm:mt-8 text-center text-sm text-gray-500 font-medium">
             Don't have an account?{" "}
-            <Link to="/register" className="text-emerald-600 font-bold hover:underline underline-offset-4">
+            <Link
+              to="/register"
+              className="text-emerald-600 font-bold hover:underline underline-offset-4"
+            >
               Create Account
             </Link>
           </p>

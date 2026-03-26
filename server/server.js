@@ -1,13 +1,13 @@
 const express = require("express");
 const cors = require("cors");
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
-const authRoutes = require('./routes/authRoutes');
-const protect = require('./middleware/authMiddleware');
-const errorHandler = require('./middleware/errorHandler');
-const transactionRoutes = require('./routes/transactionRoutes');
-const budgetRoutes = require('./routes/budgetRoutes');
-const taxRoutes = require('./routes/taxRoutes');
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
+const protect = require("./middleware/authMiddleware");
+const errorHandler = require("./middleware/errorHandler");
+const transactionRoutes = require("./routes/transactionRoutes");
+const budgetRoutes = require("./routes/budgetRoutes");
+const taxRoutes = require("./routes/taxRoutes");
 
 dotenv.config();
 
@@ -20,10 +20,10 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/budgets', budgetRoutes); 
-app.use('/api/taxes', taxRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/budgets", budgetRoutes);
+app.use("/api/taxes", taxRoutes);
 
 // Test Routes
 app.get("/", (req, res) => {
@@ -44,11 +44,11 @@ const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-process.on('unhandledRejection', (reason) => {
+process.on("unhandledRejection", (reason) => {
   console.error(`Unhandled Rejection: ${reason}`);
 });
 
-process.on('uncaughtException', (err) => {
+process.on("uncaughtException", (err) => {
   console.error(`Uncaught Exception: ${err.message}`);
   process.exit(1);
 });
