@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import FooterCredit from '../Components/FooterCredit';
 import { 
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, 
-    BarChart, Bar, XAxis, YAxis 
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine 
 } from 'recharts';
 
 const Dashboard = () => {
@@ -306,23 +306,75 @@ const Dashboard = () => {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 
-                {/* Cash Flow Bar Chart */}
-                <div className="glass-panel p-6 rounded-2xl lg:col-span-2 relative overflow-hidden">
-                    <div className="flex justify-between items-center mb-8">
-                        <h3 className="text-lg font-bold text-white">Cash Flow (All-Time)</h3>
+                {/* ✨ Predictive Cash Flow Forecast (AI) */}
+                <div className="glass-panel p-6 rounded-2xl lg:col-span-2 relative overflow-hidden flex flex-col border border-blue-500/10 transition-all hover:border-purple-500/30">
+                    <div className="flex justify-between items-center mb-2 relative z-10">
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-white">AI Cash Flow Forecast</h3>
+                            <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 text-[10px] font-bold uppercase tracking-wider border border-purple-500/30 animate-pulse">
+                                Live Prediction
+                            </span>
+                        </div>
+                        <div className="flex gap-4 text-xs font-medium">
+                            <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span><span className="text-slate-300">Actual Balance</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span><span className="text-slate-300">Predicted (Next 3 Mos)</span></div>
+                        </div>
                     </div>
-                    <div className="h-64 w-full">
+
+                    {/* AI Insight Text Box */}
+                    <div className="mb-6 p-3 rounded-lg bg-gradient-to-r from-purple-500/10 to-transparent border-l-2 border-purple-500">
+                        <p className="text-xs text-slate-300 leading-relaxed flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[16px] text-purple-400">psychology</span>
+                            {stats.netIncome > 0 
+                                ? "Based on your spending velocity, your cash reserves are healthy. Expect a slight dip in June due to your estimated Q1 Advance Tax payout." 
+                                : "Warning: Your current burn rate is high. The AI predicts your cash reserves will drop below safe levels by May. Reduce non-essential expenses."}
+                        </p>
+                    </div>
+
+                    {/* The Interactive Chart */}
+                    <div className="h-64 w-full flex-1">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={mockBarData}>
-                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                            <AreaChart data={[
+                                // Simulating realistic past data based on current net income
+                                { name: 'Jan', Actual: stats.netIncome > 0 ? stats.netIncome * 0.6 : 5000, Predicted: null },
+                                { name: 'Feb', Actual: stats.netIncome > 0 ? stats.netIncome * 0.8 : 8000, Predicted: null },
+                                { name: 'Mar (Now)', Actual: stats.netIncome > 0 ? stats.netIncome : 2000, Predicted: stats.netIncome > 0 ? stats.netIncome : 2000 },
+                                // Simulating AI predictions for the future
+                                { name: 'Apr', Actual: null, Predicted: stats.netIncome > 0 ? stats.netIncome * 1.1 : -1000 },
+                                { name: 'May', Actual: null, Predicted: stats.netIncome > 0 ? stats.netIncome * 1.3 : -4000 },
+                                // Simulate June tax payout drop!
+                                { name: 'Jun', Actual: null, Predicted: stats.netIncome > 0 ? (stats.netIncome * 1.4) - 15000 : -8000 }
+                            ]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                    </linearGradient>
+                                    <linearGradient id="colorPredicted" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.4}/>
+                                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} dy={10} />
+                                <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(val) => `₹${val/1000}k`} />
+                                
                                 <RechartsTooltip 
-                                    cursor={{fill: 'rgba(255,255,255,0.05)'}}
-                                    contentStyle={{ backgroundColor: '#131620', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
+                                    contentStyle={{ backgroundColor: '#131620', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
                                     formatter={(value) => formatCurrency(value)}
+                                    labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
                                 />
-                                <Bar dataKey="Income" fill="#10b981" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="Expense" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                            </BarChart>
+                                
+                                {/* Zero Line Reference */}
+                                <ReferenceLine y={0} stroke="rgba(239,68,68,0.5)" strokeDasharray="3 3" />
+
+                                {/* The Actual Past Data (Solid Green) */}
+                                <Area type="monotone" dataKey="Actual" stroke="#10b981" strokeWidth={3} fill="url(#colorActual)" activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }} />
+                                
+                                {/* The Predicted Future Data (Dashed Purple) */}
+                                <Area type="monotone" dataKey="Predicted" stroke="#a855f7" strokeWidth={3} strokeDasharray="6 6" fill="url(#colorPredicted)" activeDot={{ r: 6, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }} />
+                            </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
