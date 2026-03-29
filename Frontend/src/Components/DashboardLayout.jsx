@@ -16,7 +16,7 @@ const DashboardLayout = () => {
     ]);
     const messagesEndRef = useRef(null);
 
-  
+    // --- FETCH USER ---
     useEffect(() => {
         const fetchUserProfile = async () => {
             const token = localStorage.getItem('token');
@@ -41,7 +41,7 @@ const DashboardLayout = () => {
         fetchUserProfile();
     }, [navigate]);
 
-  
+    // --- AUTO SCROLL CHAT ---
     useEffect(() => {
         if (isChatOpen) {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -55,7 +55,7 @@ const DashboardLayout = () => {
 
     const isActive = (path) => location.pathname === path;
 
-    //                                     AI chatbot logics 
+    // --- AI CHAT LOGIC ---
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (!inputText.trim()) return;
@@ -169,7 +169,10 @@ const DashboardLayout = () => {
             {/* MAIN CONTENT AREA */}
             <Outlet context={{ user }} />
 
-            {/*Floating assistant*/}
+            {/* ========================================= */}
+            {/* ✨ FLOATING AI CHAT ASSISTANT WIDGET ✨     */}
+            {/* ========================================= */}
+            
             {/* Chat Window */}
             {isChatOpen && (
                 <div className="fixed bottom-24 right-6 w-80 sm:w-96 h-[450px] bg-[#131620]/95 backdrop-blur-xl border border-purple-500/30 rounded-2xl shadow-[0_0_40px_rgba(168,85,247,0.2)] z-[100] flex flex-col overflow-hidden animate-fade-in origin-bottom-right">

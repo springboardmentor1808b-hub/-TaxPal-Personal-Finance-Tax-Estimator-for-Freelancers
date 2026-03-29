@@ -8,6 +8,8 @@ import {
 
 const Dashboard = () => {
     const { user } = useOutletContext();
+    const [aiInsight, setAiInsight] = useState(null);
+    const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
     const [stats, setStats] = useState({
         totalIncome: 0,
