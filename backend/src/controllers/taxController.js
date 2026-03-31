@@ -339,6 +339,7 @@ exports.getTaxReminders = async (req, res) => {
       }
 
       reminders.push({
+        id: record._id, // ✅ ADDED THIS LINE TO FIX "EVENT ID MISSING"
         quarter: record.quarter,
         dueDate,
         totalAnnualTax: record.totalAnnualTax,
