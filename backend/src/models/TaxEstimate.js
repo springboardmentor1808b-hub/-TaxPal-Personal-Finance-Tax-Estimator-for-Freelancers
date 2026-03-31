@@ -78,6 +78,34 @@ const taxEstimateSchema = new mongoose.Schema(
       default: 0,
       min: 0
     },
+<<<<<<< HEAD
+=======
+
+    paymentHistory: [{
+      amount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      paymentDate: {
+        type: Date,
+        default: Date.now
+      },
+      paymentType: {
+        type: String,
+        enum: ["partial", "full"],
+        default: "partial"
+      },
+      interestIncluded: {
+        type: Number,
+        default: 0
+      },
+      remainingAfterPayment: {
+        type: Number,
+        required: true
+      }
+    }]
+>>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
   },
   { timestamps: true }
 );
