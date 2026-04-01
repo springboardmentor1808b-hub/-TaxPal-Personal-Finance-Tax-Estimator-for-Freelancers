@@ -1,9 +1,9 @@
-
+<<<<<<< HEAD
 import React from "react";
-
+=======
 import React, { useEffect, useState } from "react";
 import API from "../../api";
-
+>>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -13,8 +13,9 @@ import {
   CalendarDays,
   BarChart3,
   User,
-  LogOut,
-
+<<<<<<< HEAD
+  LogOut
+=======
   LogOut,
   AlertCircle,
   CheckCircle2,
@@ -25,12 +26,12 @@ import {
   History,
   X,
   ChevronDown
-
+>>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
 } from "lucide-react";
 
 const TaxCalendar = () => {
   const navigate = useNavigate();
-
+<<<<<<< HEAD
   const user = JSON.parse(localStorage.getItem("user"));
   return (
     <div className="flex min-h-screen bg-[#fdfaf5]">
@@ -96,7 +97,7 @@ const TaxCalendar = () => {
         </button>
         </div>
 
-
+=======
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState("2025-26");
@@ -231,12 +232,12 @@ const TaxCalendar = () => {
               <LogOut size={16}/> Logout
            </button>
         </div>
-
+>>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
       </aside>
 
       {/* MAIN CONTENT */}
       <main className="flex-1 ml-64 p-10">
-
+<<<<<<< HEAD
 
         <h1 className="text-4xl font-black mb-6">
           Tax Calendar
@@ -265,7 +266,7 @@ const TaxCalendar = () => {
         </div>
 
       </main>
-
+=======
         <div className="max-w-4xl mx-auto">
           <header className="mb-10 flex justify-between items-end">
             <div>
@@ -517,12 +518,12 @@ const TaxCalendar = () => {
           </div>
         </div>
       )}
-
+>>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
     </div>
   );
 };
 
-
+<<<<<<< HEAD
 const NavItem = ({ icon, label, active = false, onClick, closeSidebar }) => (
   <div
     onClick={() => {
@@ -547,7 +548,7 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
   >
     {icon}
     <span className="text-sm font-bold">{label}</span>
-
+>>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
   </div>
 );
 
