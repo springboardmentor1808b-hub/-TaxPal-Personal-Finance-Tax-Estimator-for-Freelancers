@@ -13,3 +13,4 @@ This project is a Login page developed using React, Vite, and Tailwind CSS.
 npm install
 npm run dev
 
+updated by Sadhna
