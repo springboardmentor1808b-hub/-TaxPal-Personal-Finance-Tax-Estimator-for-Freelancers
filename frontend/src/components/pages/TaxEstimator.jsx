@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 
-=======
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,7 +9,6 @@ import {
   BarChart3,
   User,
   LogOut,
-<<<<<<< HEAD
   CalendarDays,
 } from "lucide-react";
 import API from "../../api";
@@ -20,7 +16,7 @@ import API from "../../api";
 const TaxEstimator = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
-=======
+
   CalendarDays
 } from "lucide-react";
 
@@ -32,7 +28,7 @@ const TaxEstimator = () => {
 
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
 
   const [form, setForm] = useState({
     financialYear: "2025-26",
@@ -40,11 +36,11 @@ const TaxEstimator = () => {
     taxpayerType: "Salaried",
     totalIncome: "",
     totalDeductions: "",
-<<<<<<< HEAD
+
     tds: "",
-=======
+
     tds: ""
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
   });
 
   const [result, setResult] = useState(null);
@@ -54,11 +50,11 @@ const TaxEstimator = () => {
   const handleChange = (e) => {
     setForm({
       ...form,
-<<<<<<< HEAD
+
       [e.target.name]: e.target.value,
-=======
+
       [e.target.name]: e.target.value
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
     });
   };
 
@@ -69,14 +65,14 @@ const TaxEstimator = () => {
       totalIncome: Number(form.totalIncome),
       totalDeductions: Number(form.totalDeductions) || 0,
       isSalaried: form.taxpayerType === "Salaried",
-<<<<<<< HEAD
+
       tds:
         form.taxpayerType === "Salaried"
           ? Number(form.tds) || 0
           : 0,
       saveEstimate: save,
       replaceEstimate: replace,
-=======
+
 
       // ✅ TDS only for Business
       tds: form.taxpayerType === "Business"
@@ -85,12 +81,12 @@ const TaxEstimator = () => {
 
       saveEstimate: save,
       replaceEstimate: replace
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
     };
   };
 
   const calculateTax = async () => {
-<<<<<<< HEAD
+
     try {
       setLoading(true);
 
@@ -103,7 +99,7 @@ const TaxEstimator = () => {
       alert("Tax calculation failed");
     } finally {
       setLoading(false);
-=======
+
 
     try {
 
@@ -122,12 +118,11 @@ const TaxEstimator = () => {
 
       setLoading(false);
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
-    }
+
   };
 
   const saveEstimate = async () => {
-<<<<<<< HEAD
+
     try {
       const res = await API.post("/tax/calculate", buildPayload(true, false));
 
@@ -136,7 +131,7 @@ const TaxEstimator = () => {
     } catch (err) {
       console.error(err);
       alert("Save failed");
-=======
+
 
     try {
 
@@ -173,12 +168,12 @@ const TaxEstimator = () => {
 
       setLoading(false);
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
     }
   };
 
   const replaceEstimate = async () => {
-<<<<<<< HEAD
+
     try {
       const res = await API.post("/tax/calculate", buildPayload(true, true));
 
@@ -187,7 +182,7 @@ const TaxEstimator = () => {
     } catch (err) {
       console.error(err);
       alert("Replace failed");
-=======
+
 
     try {
 
@@ -229,17 +224,17 @@ const TaxEstimator = () => {
 
       setLoading(false);
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
     }
   };
 
   return (
-<<<<<<< HEAD
+
     <div className="flex min-h-screen bg-[#fdfaf5]">
 
       {/* Sidebar */}
       <aside className="w-64 bg-[#1a1a1a] flex flex-col fixed h-full">
-=======
+
 
     <div className="flex min-h-screen bg-[#fdfaf5] font-sans text-slate-700">
 
@@ -247,7 +242,7 @@ const TaxEstimator = () => {
 
       <aside className="w-64 bg-[#1a1a1a] flex flex-col fixed h-full shadow-2xl">
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
         <div className="p-8">
           <h1 className="text-3xl font-black italic text-white">
             Tax<span className="text-[#ff4d00]">Pal</span>
@@ -255,7 +250,7 @@ const TaxEstimator = () => {
         </div>
 
         <nav className="flex-1 px-3 mt-2 space-y-1">
-<<<<<<< HEAD
+
           <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" onClick={() => navigate("/dashboard")} />
           <NavItem icon={<ArrowLeftRight size={20} />} label="Transactions" onClick={() => navigate("/transactions")} />
           <NavItem icon={<Wallet size={20} />} label="Budgets" onClick={() => navigate("/budgets")} />
@@ -280,7 +275,7 @@ const TaxEstimator = () => {
                 {user?.email}
               </p>
             </div>
-=======
+
 
           <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" onClick={() => navigate("/dashboard")} />
 

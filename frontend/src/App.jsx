@@ -15,11 +15,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./components/pages/Profile";
 import TaxEstimator from "./components/pages/TaxEstimator";
 import TaxCalendar from "./components/pages/TaxCalendar";
-<<<<<<< HEAD
-
-=======
 import Reports from "./components/pages/Reports";
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
 function App() {
   const isAuthenticated = localStorage.getItem("token");
 
@@ -52,8 +49,7 @@ function App() {
         />
 
         <Route
-<<<<<<< HEAD
-=======
+
           path="/reports"
           element={
             <ProtectedRoute>
@@ -63,7 +59,7 @@ function App() {
         />
 
         <Route
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
           path="/income"
           element={
             <ProtectedRoute>

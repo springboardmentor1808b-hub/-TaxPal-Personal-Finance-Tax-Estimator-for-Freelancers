@@ -12,10 +12,9 @@
     "axios": "^1.13.5",
     "lucide-react": "^0.575.0",
     "react": "^18.2.0",
-<<<<<<< HEAD
-=======
+
     "react-calendar": "^6.0.0",
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
     "recharts": "^3.7.0"
