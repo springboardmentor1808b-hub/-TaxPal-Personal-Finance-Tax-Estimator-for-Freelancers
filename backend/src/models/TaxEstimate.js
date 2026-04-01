@@ -78,8 +78,8 @@ const taxEstimateSchema = new mongoose.Schema(
       default: 0,
       min: 0
     },
-<<<<<<< HEAD
-=======
+
+
 
     paymentHistory: [{
       amount: {
@@ -105,7 +105,7 @@ const taxEstimateSchema = new mongoose.Schema(
         required: true
       }
     }]
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
+
   },
   { timestamps: true }
 );

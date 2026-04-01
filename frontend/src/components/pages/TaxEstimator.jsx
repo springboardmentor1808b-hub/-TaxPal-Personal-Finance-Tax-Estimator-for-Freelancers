@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,14 +8,6 @@ import {
   BarChart3,
   User,
   LogOut,
-  CalendarDays,
-} from "lucide-react";
-import API from "../../api";
-
-const TaxEstimator = () => {
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
-
   CalendarDays
 } from "lucide-react";
 
@@ -29,18 +20,13 @@ const TaxEstimator = () => {
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
 
-
   const [form, setForm] = useState({
     financialYear: "2025-26",
     quarter: "Q1",
     taxpayerType: "Salaried",
     totalIncome: "",
     totalDeductions: "",
-
-    tds: "",
-
     tds: ""
-
   });
 
   const [result, setResult] = useState(null);
@@ -50,11 +36,7 @@ const TaxEstimator = () => {
   const handleChange = (e) => {
     setForm({
       ...form,
-
-      [e.target.name]: e.target.value,
-
       [e.target.name]: e.target.value
-
     });
   };
 
@@ -66,14 +48,6 @@ const TaxEstimator = () => {
       totalDeductions: Number(form.totalDeductions) || 0,
       isSalaried: form.taxpayerType === "Salaried",
 
-      tds:
-        form.taxpayerType === "Salaried"
-          ? Number(form.tds) || 0
-          : 0,
-      saveEstimate: save,
-      replaceEstimate: replace,
-
-
       // ✅ TDS only for Business
       tds: form.taxpayerType === "Business"
         ? Number(form.tds) || 0
@@ -81,25 +55,10 @@ const TaxEstimator = () => {
 
       saveEstimate: save,
       replaceEstimate: replace
-
     };
   };
 
   const calculateTax = async () => {
-
-    try {
-      setLoading(true);
-
-      const res = await API.post("/tax/calculate", buildPayload());
-
-      setResult(res.data.data);
-      setEstimateExists(res.data.data.estimateExists || false);
-    } catch (err) {
-      console.error(err);
-      alert("Tax calculation failed");
-    } finally {
-      setLoading(false);
-
 
     try {
 
@@ -118,20 +77,10 @@ const TaxEstimator = () => {
 
       setLoading(false);
 
-
+    }
   };
 
   const saveEstimate = async () => {
-
-    try {
-      const res = await API.post("/tax/calculate", buildPayload(true, false));
-
-      setResult(res.data.data);
-      alert("Estimate saved successfully");
-    } catch (err) {
-      console.error(err);
-      alert("Save failed");
-
 
     try {
 
@@ -168,21 +117,10 @@ const TaxEstimator = () => {
 
       setLoading(false);
 
-
     }
   };
 
   const replaceEstimate = async () => {
-
-    try {
-      const res = await API.post("/tax/calculate", buildPayload(true, true));
-
-      setResult(res.data.data);
-      alert("Estimate replaced successfully");
-    } catch (err) {
-      console.error(err);
-      alert("Replace failed");
-
 
     try {
 
@@ -224,24 +162,16 @@ const TaxEstimator = () => {
 
       setLoading(false);
 
-
     }
   };
 
   return (
-
-    <div className="flex min-h-screen bg-[#fdfaf5]">
-
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#1a1a1a] flex flex-col fixed h-full">
-
 
     <div className="flex min-h-screen bg-[#fdfaf5] font-sans text-slate-700">
 
       {/* SIDEBAR */}
 
       <aside className="w-64 bg-[#1a1a1a] flex flex-col fixed h-full shadow-2xl">
-
 
         <div className="p-8">
           <h1 className="text-3xl font-black italic text-white">
@@ -250,32 +180,6 @@ const TaxEstimator = () => {
         </div>
 
         <nav className="flex-1 px-3 mt-2 space-y-1">
-
-          <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" onClick={() => navigate("/dashboard")} />
-          <NavItem icon={<ArrowLeftRight size={20} />} label="Transactions" onClick={() => navigate("/transactions")} />
-          <NavItem icon={<Wallet size={20} />} label="Budgets" onClick={() => navigate("/budgets")} />
-          <NavItem icon={<Calculator size={20} />} label="Tax Estimator" active />
-          <NavItem icon={<CalendarDays size={20} />} label="Tax Calendar" onClick={() => navigate("/tax-calendar")} />
-          <NavItem icon={<BarChart3 size={20} />} label="Reports" />
-          <NavItem icon={<User size={20} />} label="Profile" onClick={() => navigate("/profile")} />
-        </nav>
-
-        <div className="p-3 border-t border-white/10">
-          <div className="flex items-center gap-2 mb-3 text-white">
-            <div className="w-8 h-8 bg-[#ff4d00] rounded-full flex items-center justify-center text-sm font-semibold">
-              {user?.firstName?.charAt(0)}
-              {user?.lastName?.charAt(0)}
-            </div>
-
-            <div>
-              <p className="text-xs font-medium">
-                {user?.firstName} {user?.lastName}
-              </p>
-              <p className="text-[11px] text-gray-400">
-                {user?.email}
-              </p>
-            </div>
-
 
           <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" onClick={() => navigate("/dashboard")} />
 
@@ -312,7 +216,6 @@ const TaxEstimator = () => {
               </p>
             </div>
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
           </div>
 
           <button
@@ -324,13 +227,6 @@ const TaxEstimator = () => {
           >
             <LogOut size={14} /> Logout
           </button>
-<<<<<<< HEAD
-        </div>
-      </aside>
-
-      {/* Main */}
-      <main className="flex-1 ml-64 p-10">
-=======
 
         </div>
 
@@ -340,29 +236,20 @@ const TaxEstimator = () => {
 
       <main className="flex-1 ml-64 p-10">
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
         <h1 className="text-4xl font-black mb-6">Tax Estimator</h1>
 
         <div className="grid grid-cols-3 gap-6">
 
-<<<<<<< HEAD
-          {/* Form */}
-          <div className="col-span-2 bg-white p-8 rounded-3xl shadow">
-=======
           {/* FORM */}
 
           <div className="col-span-2 bg-white p-8 rounded-3xl shadow">
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
             <h2 className="text-lg font-bold mb-4">
               Quarterly Tax Calculator
             </h2>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
-<<<<<<< HEAD
-=======
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
               <select
                 name="financialYear"
                 value={form.financialYear}
@@ -385,10 +272,7 @@ const TaxEstimator = () => {
                 <option>Q3</option>
                 <option>Q4</option>
               </select>
-<<<<<<< HEAD
-=======
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
             </div>
 
             <select
@@ -397,13 +281,8 @@ const TaxEstimator = () => {
               onChange={handleChange}
               className="w-full border p-3 rounded-xl mb-4"
             >
-<<<<<<< HEAD
-              <option value="Salaried">Salaried</option>
-              <option value="Business">Business</option>
-=======
               <option>Salaried</option>
               <option>Business</option>
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
             </select>
 
             <input
@@ -424,13 +303,6 @@ const TaxEstimator = () => {
               className="w-full border p-3 rounded-xl mb-4"
             />
 
-<<<<<<< HEAD
-            {form.taxpayerType === "Salaried" && (
-              <input
-                type="number"
-                name="tds"
-                placeholder="TDS Deducted"
-=======
             {/* ✅ TDS only for Business */}
 
             {form.taxpayerType === "Business" && (
@@ -438,7 +310,6 @@ const TaxEstimator = () => {
                 type="number"
                 name="tds"
                 placeholder="Advance Tax / TDS Paid"
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
                 value={form.tds}
                 onChange={handleChange}
                 className="w-full border p-3 rounded-xl mb-4"
@@ -446,20 +317,13 @@ const TaxEstimator = () => {
             )}
 
             <div className="flex gap-3">
-<<<<<<< HEAD
-=======
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
               <button
                 onClick={calculateTax}
                 disabled={loading}
                 className="bg-[#ff4d00] text-white px-6 py-3 rounded-xl font-bold"
               >
-<<<<<<< HEAD
-                {loading ? "Calculating..." : "Estimate Tax"}
-=======
                 Estimate Tax
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
               </button>
 
               <button
@@ -477,13 +341,6 @@ const TaxEstimator = () => {
                   Replace Estimate
                 </button>
               )}
-<<<<<<< HEAD
-            </div>
-          </div>
-
-          {/* Result */}
-          <div className="bg-white p-8 rounded-3xl shadow">
-=======
 
             </div>
 
@@ -493,25 +350,17 @@ const TaxEstimator = () => {
 
           <div className="bg-white p-8 rounded-3xl shadow">
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
             <h2 className="font-bold mb-4">Result</h2>
 
             {!result && (
               <p className="text-gray-400">
-<<<<<<< HEAD
-                Enter income details to calculate tax.
-=======
                 Enter income to estimate tax
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
               </p>
             )}
 
             {result && (
               <div className="space-y-3">
-<<<<<<< HEAD
-=======
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
                 <div>
                   <b>Taxable Income:</b> ₹{result.taxableIncome}
                 </div>
@@ -523,14 +372,6 @@ const TaxEstimator = () => {
                 <div className="text-xl font-bold text-[#ff4d00]">
                   Payable Till {form.quarter}: ₹{result.payableTillQuarter}
                 </div>
-<<<<<<< HEAD
-              </div>
-            )}
-          </div>
-
-        </div>
-      </main>
-=======
 
               </div>
             )}
@@ -541,31 +382,10 @@ const TaxEstimator = () => {
 
       </main>
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
     </div>
   );
 };
 
-<<<<<<< HEAD
-const NavItem = ({ icon, label, active = false, onClick }) => {
-  return (
-    <div
-      onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer ${
-        active
-          ? "bg-[#ff4d00] text-white"
-          : "text-gray-400 hover:text-white hover:bg-gray-700/40"
-      }`}
-    >
-      {icon}
-      <span className="text-sm">{label}</span>
-    </div>
-  );
-};
-
-export default TaxEstimator;
-
-=======
 const NavItem = ({ icon, label, active = false, onClick }) => (
   <div
     onClick={onClick}
@@ -581,4 +401,3 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
 );
 
 export default TaxEstimator;
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8

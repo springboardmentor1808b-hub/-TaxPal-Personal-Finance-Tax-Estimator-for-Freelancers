@@ -1,5 +1,4 @@
 const TaxEstimate = require("../models/TaxEstimate");
-
 /*
 ====================================================
 PROGRESSIVE TAX CALCULATION (Exact Slab Logic)
@@ -40,20 +39,6 @@ const calculateProgressiveTax = (income) => {
 
 /*
 ====================================================
-<<<<<<< HEAD
-COMPOUND 1% MONTHLY INTEREST
-====================================================
-*/
-
-const calculateCompoundInterest = (amount, months) => {
-  let total = amount;
-
-  for (let i = 0; i < months; i++) {
-    total += total * 0.01;
-  }
-
-  return total - amount;
-=======
 SIMPLE INTEREST CALCULATION (1% per month as per Indian Tax Law)
 ====================================================
 */
@@ -65,7 +50,6 @@ const calculateSimpleInterest = (amount, daysLate) => {
   const dailyRate = monthlyRate / 30; // Daily rate approximation
   
   return amount * dailyRate * daysLate;
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
 };
 
 /*
@@ -264,27 +248,16 @@ exports.payTax = async (req, res) => {
     const today = new Date();
 
     let remaining = taxRecord.remainingTax;
-<<<<<<< HEAD
-    let monthsLate = 0;
-=======
     let daysLate = 0;
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
     let interest = 0;
 
     if (today > dueDate && remaining > 0) {
 
       const diffTime = today - dueDate;
-<<<<<<< HEAD
-      monthsLate = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30));
-
-      if (monthsLate > 0) {
-        interest = calculateCompoundInterest(remaining, monthsLate);
-=======
       daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Actual days late
 
       if (daysLate > 0) {
         interest = calculateSimpleInterest(remaining, daysLate);
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
         remaining += interest;
       }
     }
@@ -295,8 +268,6 @@ exports.payTax = async (req, res) => {
     taxRecord.remainingTax = remaining > 0 ? remaining : 0;
     taxRecord.interest += interest;
 
-<<<<<<< HEAD
-=======
     // Add payment history entry
     taxRecord.paymentHistory.push({
       amount: amountPaid,
@@ -306,17 +277,12 @@ exports.payTax = async (req, res) => {
       remainingAfterPayment: taxRecord.remainingTax
     });
 
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
     await taxRecord.save();
 
     res.json({
       success: true,
       amountPaid,
-<<<<<<< HEAD
-      monthsLate,
-=======
       daysLate,
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
       interestAdded: interest,
       remainingTax: taxRecord.remainingTax
     });
@@ -366,51 +332,31 @@ exports.getTaxReminders = async (req, res) => {
       const dueDate = new Date(`${dueYear}-${dueDates[record.quarter]}`);
 
       let remaining = record.remainingTax;
-<<<<<<< HEAD
-      let monthsLate = 0;
-=======
       let daysLate = 0;
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
       let interest = 0;
 
       if (today > dueDate && remaining > 0) {
 
         const diffTime = today - dueDate;
-<<<<<<< HEAD
-        monthsLate = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30));
-
-        if (monthsLate > 0) {
-          interest = calculateCompoundInterest(remaining, monthsLate);
-=======
         daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Actual days late
 
         if (daysLate > 0) {
           interest = calculateSimpleInterest(remaining, daysLate);
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
         }
       }
 
       reminders.push({
-<<<<<<< HEAD
-=======
         _id: record._id,
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
         quarter: record.quarter,
         dueDate,
         totalAnnualTax: record.totalAnnualTax,
         payableTillQuarter: record.payableTillQuarter,
         taxPaid: record.taxPaid,
         remaining,
-<<<<<<< HEAD
-        monthsLate,
-        interestIfPaidToday: interest,
-        totalPayableToday: remaining + interest,
-=======
         daysLate,
         interestIfPaidToday: interest,
         totalPayableToday: remaining + interest,
         paymentHistory: record.paymentHistory || [],
->>>>>>> c227d919a9a7a12e0716f4189022303f094cb7d8
         status:
           remaining <= 0
             ? "Paid"
